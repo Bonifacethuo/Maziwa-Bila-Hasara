@@ -1,4 +1,4 @@
-import { STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js';
+import { STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js?v=2';
 
 let storage, storageIssue = false, savedRaw = null;
 let state = emptyState();
