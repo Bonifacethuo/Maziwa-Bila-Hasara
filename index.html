@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#163f32">
   <meta name="description" content="A farmer-first record and reminder prototype for reducing avoidable milk rejection in Kenya.">
@@ -13,7 +15,7 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <a class="brand" href="#home" aria-label="Maziwa Bila Hasara home">
+      <a class="brand" href="#home" data-go="home" aria-label="Maziwa Bila Hasara home">
         <span class="brand-mark" aria-hidden="true">M</span>
         <span><strong>Maziwa Bila Hasara</strong><small>Every litre matters</small></span>
       </a>
@@ -24,6 +26,7 @@
         <button class="nav-item" data-view="treatments"><span aria-hidden="true">✚</span> Treatment log</button>
         <button class="nav-item" data-view="check"><span aria-hidden="true">✓</span> Before collection</button>
         <button class="nav-item" data-view="deliveries"><span aria-hidden="true">▤</span> Milk deliveries</button>
+        <button class="nav-item" data-view="data"><span aria-hidden="true">◇</span> Data &amp; privacy</button>
       </nav>
       <div class="sidebar-bottom">
         <div class="privacy-note"><span class="privacy-dot"></span><strong>On this device</strong><p>Your records are saved in this browser. Export a backup before clearing browser data or changing devices.</p></div>
@@ -32,7 +35,7 @@
     </aside>
 
     <main class="main-content">
-      <header class="topbar"><div class="topbar-kicker">FARMER WORKSPACE <span class="divider">/</span> <span id="current-view-label">Overview</span></div><div class="topbar-right"><span class="status-pill"><span class="status-dot"></span> Offline ready</span><button class="language-button" id="language-toggle" type="button" aria-label="Switch language">EN / SW</button></div></header>
+      <header class="topbar"><div class="topbar-kicker">FARMER WORKSPACE <span class="divider">/</span> <span id="current-view-label">Overview</span></div><div class="topbar-right"><span class="status-pill"><span class="status-dot"></span> <span id="offline-status">Online only</span></span><button class="language-button" id="language-toggle" type="button" aria-label="Switch language">EN / SW</button></div></header>
       <div class="page-content" id="app-content"></div>
       <footer class="page-footer"><span>Maziwa Bila Hasara · Built for the realities of smallholder dairy</span><span>Record. Check. Learn.</span></footer>
     </main>

@@ -6,14 +6,24 @@
 
 Avoidable milk rejection at collection costs farmers income and can obscure the cause of a failed delivery. This prototype helps a farmer keep a simple treatment record, review handling steps before travelling, and record the collector's actual result. It does **not** test milk, diagnose disease, prescribe treatment, or certify that milk is safe. Follow the veterinarian's instructions and the collection point's testing procedure.
 
-## What works in v0.1
+## What works in v0.2
 
 - Register animals with names or tags.
 - Record a treatment, animal health provider, date, exact instructions, and an optional **vet supplied** hold-through date. Missing dates prompt a vet check; dates that have passed never automatically clear milk for sale.
 - Run a three-question precollection checklist for container, cleaning water, and prompt cooling or delivery. A concern produces a follow-up warning.
 - Record accepted or rejected litres and a reason supplied by the collector. A rejected result requires a reason.
-- See totals and recent results. Export four separate CSV backups, with spreadsheet formula injection protection.
+- See totals and recent results. Export four separate CSV exports, with spreadsheet formula injection protection.
 - Use the interface in English or Kiswahili. Installable service worker caches the app shell for offline use after the first load.
+
+## Security and recovery updates
+
+- A restrictive Content Security Policy blocks external scripts, embedded objects, and form submissions. User text is escaped before display; CSV exports neutralize formula prefixes.
+- Saved records and imported backups pass schema, length, date, unique-ID, linked-animal, and quantity checks. JSON backups have a 2 MB limit. Restore previews the record count and requires confirmation before replacement.
+- Failed saves keep the form and previously committed register intact. Damaged records pause saving and offer a raw recovery download. Changes in another tab require a reload before further saves.
+- Data & privacy offers a complete JSON backup, restoration, and confirmed device-record deletion. Backups and browser records are **not encrypted**. Use a device screen lock; avoid shared browser profiles. Deleting app records does not remove previously downloaded files.
+- Offline caches contain only this app's known assets. Cleanup preserves unrelated app caches. Existing open tabs keep their release; close and reopen all app tabs to apply an offline update.
+
+These are safeguards for a local prototype, not server-side authentication or authorization. See [SECURITY.md](SECURITY.md) for limitations and reporting.
 
 ## Run locally
 
@@ -31,7 +41,7 @@ node --test tests/*.test.mjs
 
 ## Data and pilot limits
 
-All records currently live in **this browser's local storage**. Farmers and collection clerks on different devices cannot see each other's entries. Data can disappear if the browser is cleared or a device is lost. Export backups regularly; CSV files contain potentially sensitive farm and treatment information. There is no server, login, automatic SMS/WhatsApp, veterinarian verification, laboratory integration, or production-grade consent and access controls yet. Do not use this prototype as a collection point's official record.
+All records currently live in **this browser's local storage**. Farmers and collection clerks on different devices cannot see each other's entries. Data can disappear if the browser is cleared or a device is lost. Download the complete JSON backup regularly; JSON and CSV files contain potentially sensitive farm and treatment information. There is no server, login, automatic SMS/WhatsApp, veterinarian verification, laboratory integration, or production-grade consent and access controls yet. Do not use this prototype as a collection point's official record.
 
 The "offline ready" interface refers to the cached app shell after its first successful load. The system cannot guarantee offline availability on a browser that blocks service workers or clears its cache.
 

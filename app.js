@@ -1,14 +1,19 @@
-import { STORAGE_KEY, loadState, saveState, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js';
+import { STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js';
 
-let state = loadState(localStorage);
+let storage, storageIssue = false, savedRaw = null;
+let state = emptyState();
+try { storage = window.localStorage; savedRaw = storage.getItem(STORAGE_KEY); state = readState(storage); } catch { storageIssue = true; }
 let view = 'home';
-let language = localStorage.getItem('maziwa-language') === 'sw' ? 'sw' : 'en';
+let offlineReady = false;
+let language = 'en';
+try { language = storage.getItem('maziwa-language') === 'sw' ? 'sw' : 'en'; } catch {}
 const $ = selector => document.querySelector(selector);
 const clean = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const id = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 const copy = {
   en: {
+    data: 'Data & privacy', dataTitle: 'Keep control of your records.', dataSub: 'Records stay in this browser and are not encrypted. Anyone using this browser can read them. Use a device screen lock and keep backups private.', jsonExport: 'Download complete backup', restore: 'Restore JSON backup', restoreHint: 'Choose a backup made by this app (up to 2 MB). Restore replaces all current records after confirmation.', reset: 'Delete device records', resetConfirm: 'Delete all farm records from this browser? Download a backup first. This cannot be undone.', restoreConfirm: 'Replace current records with this backup?', records: 'records', storageProblem: 'Records could not be loaded, or another tab changed them. Saving is paused to protect your data. Reload this page; for damaged records, download a recovery copy in Data & privacy before resetting.', saveFailed: 'Not saved. Storage is full, blocked, or changed in another tab. Your form has been kept.', badBackup: 'Backup rejected. Choose a valid app backup under 2 MB. Current records were kept.', recovery: 'Download recovery copy', deleteConfirm: 'Delete this animal?', online: 'Online only', offline: 'Offline ready',
     home: 'Overview', animals: 'My animals', treatments: 'Treatment log', check: 'Before collection', deliveries: 'Milk deliveries',
     eyebrow: 'A BETTER DAY AT THE MILK COLLECTION POINT', headline: 'Every litre deserves a fair chance.',
     intro: 'Keep your herd records together, prepare for collection, and learn why milk is accepted or rejected. Built for real farm routines.',
@@ -35,6 +40,7 @@ const copy = {
     selected: 'Animals with treatment reminders', noResult: 'No results yet', inUse: 'An animal with linked records cannot be deleted.',
   },
   sw: {
+    data: 'Data na faragha', dataTitle: 'Dhibiti kumbukumbu zako.', dataSub: 'Kumbukumbu hubaki kwenye kivinjari hiki bila usimbaji fiche. Mtu anayetumia kivinjari hiki anaweza kuzisoma. Funga skrini ya kifaa na linda nakala zako.', jsonExport: 'Pakua nakala kamili', restore: 'Rejesha nakala ya JSON', restoreHint: 'Chagua nakala ya programu hii (hadi MB 2). Urejeshaji hubadilisha kumbukumbu zote baada ya uthibitisho.', reset: 'Futa kumbukumbu za kifaa', resetConfirm: 'Futa kumbukumbu zote kwenye kivinjari hiki? Pakua nakala kwanza. Huwezi kutengua hatua hii.', restoreConfirm: 'Badilisha kumbukumbu zilizopo kwa nakala hii?', records: 'kumbukumbu', storageProblem: 'Kumbukumbu hazikupakiwa au zimebadilishwa kwenye kichupo kingine. Uhifadhi umesitishwa kulinda data. Pakia ukurasa tena; data iliyoharibika, pakua nakala ya urejeshaji kabla ya kufuta.', saveFailed: 'Haijahifadhiwa. Hifadhi imejaa, imezuiwa au imebadilishwa kwenye kichupo kingine. Fomu yako imebaki.', badBackup: 'Nakala imekataliwa. Chagua nakala halali ya programu chini ya MB 2. Data iliyopo imehifadhiwa.', recovery: 'Pakua nakala ya urejeshaji', deleteConfirm: 'Futa ng’ombe huyu?', online: 'Mtandaoni pekee', offline: 'Tayari bila mtandao',
     home: 'Muhtasari', animals: 'Mifugo yangu', treatments: 'Kumbukumbu za matibabu', check: 'Kabla ya kupeleka', deliveries: 'Maziwa yaliyowasilishwa',
     eyebrow: 'MAANDALIZI BORA KITUONI', headline: 'Kila lita ina thamani.', intro: 'Weka kumbukumbu za ng’ombe, jiandae kupeleka maziwa, na fahamu kwa nini yanakubaliwa au kukataliwa.',
     start: 'Kagua kabla ya kupeleka', addAnimal: 'Ongeza ng’ombe', recordDelivery: 'Rekodi matokeo', accepted: 'Lita zilizokubaliwa', rejected: 'Lita zilizokataliwa', herd: 'Ng’ombe waliorekodiwa', held: 'Tahadhari za kusitisha',
@@ -55,8 +61,9 @@ const field = (label, input, extra = '') => `<label class="field"><span>${clean(
 
 function layout(content, title) {
   $('#current-view-label').textContent = title;
-  $('#app-content').innerHTML = content;
-  document.querySelectorAll('.nav-item').forEach(item => { item.classList.toggle('active', item.dataset.view === view); item.innerHTML = `<span aria-hidden="true">${({home:'◫',animals:'♧',treatments:'✚',check:'✓',deliveries:'▤'})[item.dataset.view]}</span>${t(item.dataset.view)}`; });
+  $('#offline-status').textContent=t(offlineReady?'offline':'online');
+  $('#app-content').innerHTML = (storageIssue ? `<div class="warning-block" role="alert">${t('storageProblem')} <button class="text-button" data-go="data">${t('data')} ↗</button></div>` : '') + content;
+  document.querySelectorAll('.nav-item').forEach(item => { item.classList.toggle('active', item.dataset.view === view); item.setAttribute('aria-current', item.dataset.view === view ? 'page' : 'false'); item.innerHTML = `<span aria-hidden="true">${({home:'◫',animals:'♧',treatments:'✚',check:'✓',deliveries:'▤',data:'◇'})[item.dataset.view]}</span>${t(item.dataset.view)}`; });
   document.documentElement.lang = language === 'sw' ? 'sw' : 'en';
   $('#language-toggle').textContent = language === 'sw' ? 'SW / EN' : 'EN / SW';
   $('#language-toggle').setAttribute('aria-label', language === 'sw' ? 'Switch to English' : 'Badili kwa Kiswahili');
@@ -94,9 +101,19 @@ function deliveries() {
   layout(`<div class="page-heading"><span class="eyebrow">04 / COLLECTION RESULTS</span><h1>${t('deliveryTitle')}</h1><p>${t('deliverySub')}</p></div><div class="two-column"><section class="panel form-panel"><div class="panel-heading"><span class="circle-icon">▤</span><h2>${t('recordDelivery')}</h2></div><form id="delivery-form">${field(t('date'),`<input name="date" type="date" value="${todayLocal()}" required>`)}${field(t('litres'),'<input name="litres" type="number" min="0.1" max="100000" step="0.1" required placeholder="e.g. 12.5">')}${field(t('result'),`<select name="status" required><option value="accepted">${t('acceptedOption')}</option><option value="rejected">${t('rejectedOption')}</option></select>`)}${field(t('reason'),`<input name="reason" maxlength="180" placeholder="${t('reasonPlaceholder')}">`)}${field(t('collector'),'<input name="collector" maxlength="100" placeholder="e.g. Mukurweini collection centre">')}<button class="button button-dark" type="submit">${t('saveDelivery')} <span>↗</span></button></form></section><section class="panel records-panel"><div class="section-heading"><div><span class="eyebrow">COLLECTION HISTORY</span><h2>${t('all')} <span class="count">${state.deliveries.length}</span></h2></div></div>${deliveryRows([...state.deliveries].reverse())}<div class="export-box"><div><strong>${t('backup')}</strong><p>${t('exportDesc')}</p></div><button class="button button-outline" id="export-button">${t('export')} ↓</button></div></section></div>`, t('deliveries'));
 }
 
-function render() { ({home,animals,treatments,check:checks,deliveries})[view](); }
+function dataPrivacy() {
+  layout(`<div class="page-heading"><span class="eyebrow">05 / DATA</span><h1>${t('dataTitle')}</h1><p>${t('dataSub')}</p></div><div class="two-column"><section class="panel form-panel"><h2>${t('backup')}</h2><p>${t('restoreHint')}</p><button class="button button-dark" id="json-export">${storageIssue?t('recovery'):t('jsonExport')} ↓</button><div class="export-box"><label class="field"><span>${t('restore')}</span><input id="restore-file" type="file" accept=".json,application/json" ${storageIssue?'disabled':''}></label></div><button class="button button-outline" id="export-button" ${storageIssue?'disabled':''}>${t('export')} ↓</button></section><section class="panel form-panel"><h2>${t('data')}</h2><p>${t('dataSub')}</p><div class="warning-block">${t('resetConfirm')}</div><button class="button button-outline danger" id="reset-records">${t('reset')}</button></section></div>`,t('data'));
+}
+function render() { ({home,animals,treatments,check:checks,deliveries,data:dataPrivacy})[view](); }
 function toast(message) { const box=$('#toast'); box.textContent=message; box.classList.add('show'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>box.classList.remove('show'),3500); }
-function persist() { try { saveState(localStorage,state); render(); toast(t('saved')); } catch { toast('Storage is full or unavailable. Export your records and free space.'); } }
+function persist(change) {
+  try {
+    if (storageIssue || storage.getItem(STORAGE_KEY) !== savedRaw) throw new Error('Storage changed');
+    state = commitState(storage,state,change);
+    savedRaw = storage.getItem(STORAGE_KEY);
+    render(); toast(t('saved')); return true;
+  } catch { toast(t('saveFailed')); return false; }
+}
 
 document.addEventListener('click', event => {
   const go=event.target.closest('[data-view],[data-go]');
@@ -105,10 +122,16 @@ document.addEventListener('click', event => {
   if (del) {
     const animalId=del.dataset.deleteAnimal;
     if (state.treatments.some(item=>item.animalId===animalId)) return toast(t('inUse'));
-    state.animals=state.animals.filter(item=>item.id!==animalId); persist();
+    if (confirm(t('deleteConfirm'))) persist(next => { next.animals=next.animals.filter(item=>item.id!==animalId); });
   }
-  if (event.target.closest('#language-toggle')) { language=language==='en'?'sw':'en'; localStorage.setItem('maziwa-language',language); render(); }
+  if (event.target.closest('#language-toggle')) { language=language==='en'?'sw':'en'; try { storage.setItem('maziwa-language',language); } catch {} render(); }
   if (event.target.closest('#export-button')) exportAll();
+  if (event.target.closest('#json-export')) {
+    try { const raw=storageIssue?storage.getItem(STORAGE_KEY):JSON.stringify(state,null,2); if(raw===null) throw new Error(); download(`maziwa-backup-${todayLocal()}.json`,raw,'application/json'); } catch { toast(t('saveFailed')); }
+  }
+  if (event.target.closest('#reset-records') && confirm(t('resetConfirm'))) {
+    try { state=saveState(storage,emptyState()); savedRaw=storage.getItem(STORAGE_KEY); storageIssue=false; render(); toast(t('saved')); } catch { toast(t('saveFailed')); }
+  }
 });
 
 document.addEventListener('submit', event => {
@@ -116,27 +139,28 @@ document.addEventListener('submit', event => {
   event.preventDefault();
   const data=Object.fromEntries(new FormData(event.target));
   const base={id:id(),createdAt:new Date().toISOString()};
+  const next=structuredClone(state);
   if (event.target.id==='animal-form') {
     if (!data.name?.trim()) return toast(t('invalid'));
-    state.animals.push({...base,name:data.name.trim(),note:data.note.trim()});
+    next.animals.push({...base,name:data.name.trim(),note:data.note.trim()});
   } else if (event.target.id==='treatment-form') {
     if (!state.animals.some(item=>item.id===data.animalId)||!data.name?.trim()||!data.vet?.trim()||!validDate(data.date)|| (data.holdUntil && (!validDate(data.holdUntil)||data.holdUntil<data.date))) return toast(t('invalid'));
-    state.treatments.push({...base,animalId:data.animalId,name:data.name.trim(),vet:data.vet.trim(),date:data.date,holdUntil:data.holdUntil||'',instructions:data.instructions.trim()});
+    next.treatments.push({...base,animalId:data.animalId,name:data.name.trim(),vet:data.vet.trim(),date:data.date,holdUntil:data.holdUntil||'',instructions:data.instructions.trim()});
   } else if (event.target.id==='check-form') {
     if (!validDate(data.date)||!['container','water','promptly'].every(key=>['yes','no','unsure'].includes(data[key]))) return toast(t('invalid'));
     const flagged=['container','water','promptly'].some(key=>data[key]!=='yes')||state.animals.some(a=>['hold','ask'].includes(animalStatus(a.id,state.treatments,data.date)));
-    state.checks.push({...base,...data,flagged});
-    persist(); return toast(flagged?t('notClearBody'):t('preparedBody'));
+    next.checks.push({...base,...data,flagged});
+    if(persist(draft => Object.assign(draft,next))) toast(flagged?t('notClearBody'):t('preparedBody')); return;
   } else {
     const litres=Number(data.litres);
     if (!validDate(data.date)||!Number.isFinite(litres)||litres<=0||litres>100000||!['accepted','rejected'].includes(data.status)|| (data.status==='rejected'&&!data.reason?.trim())) return toast(t('invalid'));
-    state.deliveries.push({...base,date:data.date,litres,status:data.status,reason:data.reason.trim(),collector:data.collector.trim()});
+    next.deliveries.push({...base,date:data.date,litres,status:data.status,reason:data.reason.trim(),collector:data.collector.trim()});
   }
-  persist();
+  persist(draft => Object.assign(draft,next));
 });
 
-function download(filename,content) {
-  const blob=new Blob(['\uFEFF',content],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+function download(filename,content,type='text/csv;charset=utf-8') {
+  const blob=new Blob([type.startsWith('text/csv')?'\uFEFF':'',content],{type}), url=URL.createObjectURL(blob), a=document.createElement('a');
   a.href=url; a.download=filename; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function exportAll() {
@@ -150,5 +174,20 @@ function exportAll() {
   toast(t('exportDone'));
 }
 
+document.addEventListener('change', async event => {
+  if (event.target.matches('#delivery-form [name="status"]')) $('#delivery-form [name="reason"]').required = event.target.value === 'rejected';
+  if (event.target.id !== 'restore-file') return;
+  const file=event.target.files[0]; if(!file) return;
+  try {
+    if(file.size > MAX_BACKUP_BYTES) throw new Error();
+    const imported=parseBackup(await file.text());
+    const count=['animals','treatments','checks','deliveries'].reduce((sum,key)=>sum+imported[key].length,0);
+    if(confirm(`${count} ${t('records')}. ${t('restoreConfirm')}`)) persist(draft=>Object.assign(draft,imported));
+  } catch { toast(t('badBackup')); }
+  event.target.value='';
+});
+window.addEventListener('storage', event => {
+  if(event.key===STORAGE_KEY || event.key===null) { storageIssue=true; render(); }
+});
 render();
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if ('serviceWorker'  in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready).then(() => { offlineReady=true; $('#offline-status').textContent=t('offline'); }).catch(()=>{});
