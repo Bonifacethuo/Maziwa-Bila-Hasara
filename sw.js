@@ -1,10 +1,10 @@
 // Scope caches to this project; never delete another GitHub Pages app's cache.
 const PREFIX = `maziwa-bila-hasara:${self.registration.scope}:`;
-const CACHE = `${PREFIX}v3`;
-const ASSETS = ['./', './index.html', './styles.css', './app.js', './domain.js', './icon.svg', './manifest.webmanifest'].map(path => new URL(path, self.registration.scope).href);
+const CACHE = `${PREFIX}v4`;
+const ASSETS = ['./', './index.html', './styles.css', './app.js', './domain.js', './icon.svg', './manifest.webmanifest', './assets/kenya-dairy.webp'].map(path => new URL(path, self.registration.scope).href);
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => Promise.all(ASSETS.map(async url => {
-    const fresh = new URL(url); fresh.searchParams.set('release','2');
+    const fresh = new URL(url); fresh.searchParams.set('release','3');
     const response = await fetch(new Request(fresh.href, {cache:'reload'}));
     if (!response.ok) throw new Error('App shell could not be cached');
     await cache.put(url,response);
@@ -25,3 +25,4 @@ self.addEventListener('fetch', event => {
     return cached || fetch(event.request);
   }));
 });
+

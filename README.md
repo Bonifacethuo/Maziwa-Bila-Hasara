@@ -15,6 +15,10 @@ Avoidable milk rejection at collection costs farmers income and can obscure the 
 - See totals and recent results. Export four separate CSV exports, with spreadsheet formula injection protection.
 - Use the interface in English or Kiswahili. Installable service worker caches the app shell for offline use after the first load.
 
+## Design refresh
+
+The dashboard uses an authentic Kenyan dairy photograph, forest-green navigation, cream surfaces, warm gold actions, and a consistent SVG icon set. Forms, record lists, and phone navigation share the same visual system. All new interface text is available in English and Kiswahili. The photograph is stored with the app for offline use; see [photo attribution](assets/README.md) for its separate CC BY-SA 4.0 license.
+
 ## Security and recovery updates
 
 - A restrictive Content Security Policy blocks external scripts, embedded objects, and form submissions. User text is escaped before display; CSV exports neutralize formula prefixes.
@@ -61,3 +65,4 @@ See [PRODUCT.md](PRODUCT.md) for scope, data fields, and the next decisions. Add
 ## License
 
 MIT, see [LICENSE](LICENSE). This license covers the code and design in this repository. It does not grant permission to use third-party names or marks.
+

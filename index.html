@@ -9,17 +9,18 @@
   <meta name="description" content="A farmer-first record and reminder prototype for reducing avoidable milk rejection in Kenya.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
   <title>Maziwa Bila Hasara</title>
 </head>
 <body>
+  <a class="skip-link" href="#app-content">Skip to content</a>
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand" href="#home" data-go="home" aria-label="Maziwa Bila Hasara home">
         <span class="brand-mark" aria-hidden="true">M</span>
         <span><strong>Maziwa Bila Hasara</strong><small>Every litre matters</small></span>
       </a>
-      <div class="sidebar-label">WORKSPACE</div>
+      <div class="sidebar-label" id="workspace-label">FARM WORKSPACE</div>
       <nav aria-label="Main navigation">
         <button class="nav-item active" data-view="home"><span aria-hidden="true">◫</span> Overview</button>
         <button class="nav-item" data-view="animals"><span aria-hidden="true">♧</span> My animals</button>
@@ -29,18 +30,19 @@
         <button class="nav-item" data-view="data"><span aria-hidden="true">◇</span> Data &amp; privacy</button>
       </nav>
       <div class="sidebar-bottom">
-        <div class="privacy-note"><span class="privacy-dot"></span><strong>On this device</strong><p>Your records are saved in this browser. Export a backup before clearing browser data or changing devices.</p></div>
+        <div class="privacy-note"><span class="privacy-dot"></span><strong id="device-title">Your farm, your records</strong><p id="device-note">Saved in this browser. Keep a private backup before changing devices.</p></div>
         <div class="sidebar-footer">Pilot prototype · Kenya</div>
       </div>
     </aside>
 
     <main class="main-content">
-      <header class="topbar"><div class="topbar-kicker">FARMER WORKSPACE <span class="divider">/</span> <span id="current-view-label">Overview</span></div><div class="topbar-right"><span class="status-pill"><span class="status-dot"></span> <span id="offline-status">Online only</span></span><button class="language-button" id="language-toggle" type="button" aria-label="Switch language">EN / SW</button></div></header>
-      <div class="page-content" id="app-content"></div>
-      <footer class="page-footer"><span>Maziwa Bila Hasara · Built for the realities of smallholder dairy</span><span>Record. Check. Learn.</span></footer>
+      <header class="topbar"><div class="topbar-kicker"><span id="workspace-top">MAZIWA BILA HASARA</span> <span class="divider">/</span> <span id="current-view-label">Overview</span></div><div class="topbar-right"><span class="status-pill"><span class="status-dot"></span> <span id="offline-status">Online only</span></span><button class="language-button" id="language-toggle" type="button" aria-label="Switch language">EN / SW</button></div></header>
+      <div class="page-content" id="app-content" tabindex="-1"></div>
+      <footer class="page-footer"><span id="footer-line">Made for everyday dairy farming in Kenya.</span><details class="photo-credits"><summary id="photo-credit-label">Photo credits</summary><div><a href="https://commons.wikimedia.org/wiki/File:Smallholder_Dairy_Farmer.jpg" target="_blank" rel="noopener noreferrer">Smallholder Dairy Farmer · LishaBora2017</a><br><a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a> · Resized, compressed; displayed with responsive cropping.<p id="photo-note">Illustrative farm photography. No affiliation or endorsement implied.</p></div></details></footer>
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>
+
