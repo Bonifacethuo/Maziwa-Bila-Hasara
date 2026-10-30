@@ -17,7 +17,7 @@ Avoidable milk rejection at collection costs farmers income and can obscure the 
 
 ## Design refresh
 
-The dashboard uses an authentic Kenyan dairy photograph, forest-green navigation, cream surfaces, warm gold actions, and a consistent SVG icon set. Forms, record lists, and phone navigation share the same visual system. All new interface text is available in English and Kiswahili. The photograph is stored with the app for offline use; see [photo attribution](assets/README.md) for its separate CC BY-SA 4.0 license.
+The dashboard uses a three-image gallery: an authentic Kenyan dairy photograph and two clearly labelled AI-created illustrations of young adult farmers, forest-green navigation, cream surfaces, warm gold actions, and a consistent SVG icon set. Forms, record lists, and phone navigation share the same visual system. All new interface text is available in English and Kiswahili. All three images are stored with the app for offline use. The gallery has pause/play, manual selectors, keyboard navigation, an eight-second automatic rotation, and hover/focus/hidden-tab/reduced-motion safeguards; see [photo attribution](assets/README.md) for its separate CC BY-SA 4.0 license.
 
 ## Security and recovery updates
 
