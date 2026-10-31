@@ -66,3 +66,8 @@ See [PRODUCT.md](PRODUCT.md) for scope, data fields, and the next decisions. Add
 
 MIT, see [LICENSE](LICENSE). This license covers the code and design in this repository. It does not grant permission to use third-party names or marks.
 
+
+
+## Daily collection guidance
+
+The home page now highlights the next useful farm action, today's preparation status and collection-result count. A seven-day summary shows accepted/rejected litres and the leading entered rejection reasons, with honest empty states and direct access to delivery records. These are read-only views over existing local data; no account or migration is needed.

@@ -98,3 +98,31 @@ export function csvCell(value) {
 export function toCsv(rows, columns) {
   return [columns.map(([label]) => csvCell(label)).join(','), ...rows.map(row => columns.map(([, key]) => csvCell(row[key])).join(','))].join('\r\n');
 }
+
+
+// Read-only summaries: dates refer to the farmer's local calendar day.
+export function collectionSummary(state, day = todayLocal()) {
+  if (!validDate(day)) throw new Error('Invalid summary date');
+  const start = new Date(`${day}T12:00:00Z`);
+  start.setUTCDate(start.getUTCDate() - 6);
+  const from = start.toISOString().slice(0,10);
+  const recent = state.deliveries.filter(row => row.date >= from && row.date <= day);
+  const today = state.deliveries.filter(row => row.date === day);
+  const checks = state.checks.filter(row => row.date === day);
+  const check = checks.reduce((latest,row) => !latest || row.createdAt >= latest.createdAt ? row : latest,null);
+  // Future-dated treatment entries cannot affect today's reminders.
+  const treatments = state.treatments.filter(row => row.date <= day);
+  const reminders = state.animals.filter(animal => ['hold','ask'].includes(animalStatus(animal.id,treatments,day))).length;
+  const groups = new Map();
+  for (const row of recent.filter(row => row.status === 'rejected')) {
+    const reason = row.reason.trim().replace(/\s+/g,' ');
+    const key = reason.toLowerCase();
+    const group = groups.get(key) ?? {reason,count:0,litres:0};
+    group.count++; group.litres += row.litres; groups.set(key,group);
+  }
+  const reasons = [...groups.values()].sort((a,b) => b.litres-a.litres || b.count-a.count || a.reason.localeCompare(b.reason));
+  const action = !state.animals.length ? 'animals' : reminders ? 'treatments' : !check || check.flagged ? 'check' : 'deliveries';
+  return {from,to:day,count:recent.length,accepted:totalLitres(recent,'accepted'),rejected:totalLitres(recent,'rejected'),reasons,
+    todayCount:today.length,todayAccepted:totalLitres(today,'accepted'),todayRejected:totalLitres(today,'rejected'),
+    checkStatus:!check?'missing':check.flagged?'followup':'recorded',reminders,action};
+}

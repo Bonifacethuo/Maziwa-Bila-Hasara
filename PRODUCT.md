@@ -39,3 +39,10 @@ Reduce **avoidable rejected litres per 100 litres presented** at a cooperating m
 ## Claims we will not make
 
 The app cannot certify milk safety, replace a laboratory test, set a withdrawal period, diagnose mastitis, or establish a causal effect from simple before-and-after counts.
+
+
+## Daily collection overview
+
+The home screen derives daily actions from the local herd, treatment, preparation-check and delivery records. The latest same-day check is selected by recorded creation time. Current treatment holds and missing dates take priority over recording another delivery. These reminders are not milk-safety clearance.
+
+The seven-day summary includes today and the six preceding calendar dates, using delivery dates rather than entry order. It excludes future results. Reasons are grouped only by case and whitespace, ranked by rejected litres, and shown as the top three with a link to all deliveries. All results remain user-entered, not independently verified collector or laboratory records. No currency losses, causal claims or diagnostic categories are inferred.
