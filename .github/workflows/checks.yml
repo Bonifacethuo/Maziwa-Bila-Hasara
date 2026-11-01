@@ -14,5 +14,6 @@ jobs:
         with:
           node-version: '24'
       - run: node --test tests/*.test.mjs
-      - run: node --check app.js && node --check domain.js && node --check sw.js && node --check carousel.js
+      - run: node --check app.js && node --check domain.js && node --check sw.js && node --check carousel.js && node --check accessibility.js
+
 

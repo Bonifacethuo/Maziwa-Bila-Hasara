@@ -71,3 +71,8 @@ MIT, see [LICENSE](LICENSE). This license covers the code and design in this rep
 ## Daily collection guidance
 
 The home page now highlights the next useful farm action, today's preparation status and collection-result count. A seven-day summary shows accepted/rejected litres and the leading entered rejection reasons, with honest empty states and direct access to delivery records. These are read-only views over existing local data; no account or migration is needed.
+
+
+## Keyboard and phone access
+
+Navigation moves keyboard focus to the new page heading. Form labels are explicitly linked, with help text exposed separately. Phone navigation uses concise bilingual labels while retaining full screen-reader names; main navigation and carousel controls have larger touch targets. Contributors can inspect 320px and 390px layouts using `tests/mobile-preview.html` on the same server.

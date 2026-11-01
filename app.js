@@ -1,5 +1,6 @@
-import { mountCarousel } from './carousel.js?v=5';
-import { collectionSummary, STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js?v=5';
+import { fieldMarkup, focusView } from './accessibility.js?v=6';
+import { mountCarousel } from './carousel.js?v=6';
+import { collectionSummary, STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js?v=6';
 
 let storage, storageIssue = false, savedRaw = null;
 let state = emptyState();
@@ -21,6 +22,7 @@ const icon = name => `<svg class="ui-icon" width="24" height="24" viewBox="0 0 2
 
 const copy = {
   en: {
+    navHome: 'Home', navAnimals: 'Herd', navTreatments: 'Care', navCheck: 'Check', navDeliveries: 'Milk', navData: 'Data',
     topReasons: 'Up to three leading reasons by rejected litres. View all deliveries for the full record.',
     dailyTitle: 'Today’s collection', dailyEyebrow: 'YOUR NEXT STEP', recentWeek: 'Last seven days', weekNote: 'From your saved collection results. Reasons are reported by you, not independently verified.', noWeek: 'No collection results in this period. Record a result after the collector tests your milk.', noRejections: 'No rejected deliveries recorded in this period.', reasonsTitle: 'Reasons entered for rejected milk', reasonCount: 'deliveries', todayResults: 'Results recorded today', checkMissing: 'No preparation check today', checkFollowup: 'Latest check needs follow-up', checkRecorded: 'Preparation check recorded', currentReminders: 'Animals needing vet follow-up', nextAnimal: 'Start with your herd record.', nextTreatment: 'Review treatment reminders before collection.', nextCheck: 'Record your preparation before leaving.', nextFollowup: 'Follow up on the latest preparation check.', nextDelivery: 'Record the collector’s actual result.', reviewResults: 'Review today’s collection results.', noClearance: 'A recorded check is not clearance to sell milk. Follow vet instructions and collection-point testing.',
     data: 'Data & privacy', dataTitle: 'Keep control of your records.', dataSub: 'Records stay in this browser and are not encrypted. Anyone using this browser can read them. Use a device screen lock and keep backups private.', jsonExport: 'Download complete backup', restore: 'Restore JSON backup', restoreHint: 'Choose a backup made by this app (up to 2 MB). Restore replaces all current records after confirmation.', reset: 'Delete device records', resetConfirm: 'Delete all farm records from this browser? Download a backup first. This cannot be undone.', restoreConfirm: 'Replace current records with this backup?', records: 'records', storageProblem: 'Records could not be loaded, or another tab changed them. Saving is paused to protect your data. Reload this page; for damaged records, download a recovery copy in Data & privacy before resetting.', saveFailed: 'Not saved. Storage is full, blocked, or changed in another tab. Your form has been kept.', badBackup: 'Backup rejected. Choose a valid app backup under 2 MB. Current records were kept.', recovery: 'Download recovery copy', deleteConfirm: 'Delete this animal?', online: 'Online only', offline: 'Offline ready',
@@ -52,6 +54,7 @@ const copy = {
     selected: 'Animals with treatment reminders', noResult: 'No results yet', inUse: 'An animal with linked records cannot be deleted.',
   },
   sw: {
+    navHome: 'Mwanzo', navAnimals: 'Mifugo', navTreatments: 'Tiba', navCheck: 'Kagua', navDeliveries: 'Maziwa', navData: 'Data',
     topReasons: 'Hadi sababu tatu kuu kulingana na lita zilizokataliwa. Tazama matokeo yote kwa kumbukumbu kamili.',
     dailyTitle: 'Mkusanyiko wa maziwa leo', dailyEyebrow: 'HATUA INAYOFUATA', recentWeek: 'Siku saba zilizopita', weekNote: 'Kutoka kwenye matokeo uliyohifadhi. Sababu umeziandika wewe; hazijathibitishwa kwa kujitegemea.', noWeek: 'Hakuna matokeo katika kipindi hiki. Rekodi matokeo baada ya mkaguzi kupima maziwa.', noRejections: 'Hakuna maziwa yaliyokataliwa yaliyorekodiwa katika kipindi hiki.', reasonsTitle: 'Sababu zilizoandikwa za maziwa kukataliwa', reasonCount: 'uwasilishaji', todayResults: 'Matokeo yaliyorekodiwa leo', checkMissing: 'Hakuna ukaguzi wa maandalizi leo', checkFollowup: 'Ukaguzi wa mwisho unahitaji ufuatiliaji', checkRecorded: 'Ukaguzi wa maandalizi umerekodiwa', currentReminders: 'Ng’ombe wanaohitaji ufuatiliaji wa daktari', nextAnimal: 'Anza kwa kurekodi mifugo yako.', nextTreatment: 'Pitia tahadhari za matibabu kabla ya kupeleka.', nextCheck: 'Rekodi maandalizi kabla ya kuondoka.', nextFollowup: 'Fuatilia ukaguzi wa mwisho wa maandalizi.', nextDelivery: 'Rekodi matokeo halisi ya mkaguzi.', reviewResults: 'Pitia matokeo ya maziwa ya leo.', noClearance: 'Ukaguzi uliorekodiwa si ruhusa ya kuuza maziwa. Fuata maelekezo ya daktari na vipimo vya kituo.',
     data: 'Data na faragha', dataTitle: 'Dhibiti kumbukumbu zako.', dataSub: 'Kumbukumbu hubaki kwenye kivinjari hiki bila usimbaji fiche. Mtu anayetumia kivinjari hiki anaweza kuzisoma. Funga skrini ya kifaa na linda nakala zako.', jsonExport: 'Pakua nakala kamili', restore: 'Rejesha nakala ya JSON', restoreHint: 'Chagua nakala ya programu hii (hadi MB 2). Urejeshaji hubadilisha kumbukumbu zote baada ya uthibitisho.', reset: 'Futa kumbukumbu za kifaa', resetConfirm: 'Futa kumbukumbu zote kwenye kivinjari hiki? Pakua nakala kwanza. Huwezi kutengua hatua hii.', restoreConfirm: 'Badilisha kumbukumbu zilizopo kwa nakala hii?', records: 'kumbukumbu', storageProblem: 'Kumbukumbu hazikupakiwa au zimebadilishwa kwenye kichupo kingine. Uhifadhi umesitishwa kulinda data. Pakia ukurasa tena; data iliyoharibika, pakua nakala ya urejeshaji kabla ya kufuta.', saveFailed: 'Haijahifadhiwa. Hifadhi imejaa, imezuiwa au imebadilishwa kwenye kichupo kingine. Fomu yako imebaki.', badBackup: 'Nakala imekataliwa. Chagua nakala halali ya programu chini ya MB 2. Data iliyopo imehifadhiwa.', recovery: 'Pakua nakala ya urejeshaji', deleteConfirm: 'Futa ng’ombe huyu?', online: 'Mtandaoni pekee', offline: 'Tayari bila mtandao',
@@ -73,7 +76,7 @@ const date = value => formatDate(value, language === 'sw' ? 'sw-KE' : 'en-KE');
 const nameOf = animalId => state.animals.find(animal => animal.id === animalId)?.name || 'Unknown animal';
 const badge = status => `<span class="badge ${status}">${clean(t(status))}</span>`;
 const empty = message => `<div class="empty-state"><div class="empty-symbol">◌</div><strong>${clean(message)}</strong></div>`;
-const field = (label, input, extra = '') => `<label class="field"><span>${clean(label)}</span>${input}${extra}</label>`;
+const field = fieldMarkup;
 
 function layout(content, title) {
   disposeCarousel(); disposeCarousel = () => {};
@@ -86,7 +89,8 @@ function layout(content, title) {
     if(active) item.setAttribute('aria-current','page'); else item.removeAttribute('aria-current');
     item.setAttribute('aria-label',t(item.dataset.view));
     item.title=t(item.dataset.view);
-    item.innerHTML=`${icon(item.dataset.view)}<span class="nav-label">${t(item.dataset.view)}</span>`;
+    const shortLabel = {home:'navHome',animals:'navAnimals',treatments:'navTreatments',check:'navCheck',deliveries:'navDeliveries',data:'navData'}[item.dataset.view];
+    item.innerHTML=`${icon(item.dataset.view)}<span class="nav-label nav-long">${t(item.dataset.view)}</span><span class="nav-label nav-short" aria-hidden="true">${t(shortLabel)}</span>`;
   });
   $('#device-title').textContent=t('deviceTitle');
   $('#device-note').textContent=t('deviceNote');
@@ -166,7 +170,7 @@ function persist(change) {
 
 document.addEventListener('click', event => {
   const go=event.target.closest('[data-view],[data-go]');
-  if (go) { view=go.dataset.view||go.dataset.go; render(); window.scrollTo(0,0); }
+  if (go) { view=go.dataset.view||go.dataset.go; render(); window.scrollTo(0,0); focusView(); }
   const del=event.target.closest('[data-delete-animal]');
   if (del) {
     const animalId=del.dataset.deleteAnimal;
@@ -240,5 +244,6 @@ window.addEventListener('storage', event => {
 });
 render();
 if ('serviceWorker'  in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready).then(() => { offlineReady=true; $('#offline-status').textContent=t('offline'); }).catch(()=>{});
+
 
 

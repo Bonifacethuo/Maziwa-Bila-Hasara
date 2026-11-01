@@ -24,3 +24,14 @@ No storage schema, backup, privacy or image changes. The approved youth carousel
 Validation: 21 Node tests passed, including six new collection-summary tests; all JavaScript syntax checks passed. A rendering smoke check covered all six views in both languages and verified that unsafe-looking reason text is escaped. Live layout and deployment status are reported with the delivery.
 
 Next: step 3, mobile usability/accessibility/performance refinement; then one useful outstanding improvement on the final requested update.
+
+
+## 1 November 2026 — Mobile navigation and accessible forms
+
+Completed step 3's focused usability work. Phone navigation now uses readable short labels in English/Kiswahili while preserving the full accessible names; controls have larger touch targets. Form labels are explicitly linked to their controls, and veterinary help text is separately linked as a description. Deliberate view navigation focuses the new page heading without scrolling it away. Save/language rerenders do not steal focus.
+
+Added a dependency-free two-frame layout inspection helper at `tests/mobile-preview.html` for actual 320px/390px CSS viewports when browser emulation is unavailable. It reads existing browser records and does not generate or submit sample records.
+
+Validation: all 26 Node tests passed, including five new label/focus regression tests; JavaScript syntax checks passed. Live phone-layout and deployment checks are recorded in the delivery report. Production CSP, storage schema, backup behavior, treatment safety wording and the approved image gallery are preserved. App-shell release versions were updated together.
+
+Next: choose one useful outstanding improvement for the final update, such as delivery filtering or a clearer treatment-reminder overview. Preserve the completed gallery and collection overview.
