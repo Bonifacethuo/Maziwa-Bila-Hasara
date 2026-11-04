@@ -35,3 +35,14 @@ Added a dependency-free two-frame layout inspection helper at `tests/mobile-prev
 Validation: all 26 Node tests passed, including five new label/focus regression tests; JavaScript syntax checks passed. Live phone-layout and deployment checks are recorded in the delivery report. Production CSP, storage schema, backup behavior, treatment safety wording and the approved image gallery are preserved. App-shell release versions were updated together.
 
 Next: choose one useful outstanding improvement for the final update, such as delivery filtering or a clearer treatment-reminder overview. Preserve the completed gallery and collection overview.
+
+
+## 4 November 2026 — Delivery date and result filters
+
+Added bilingual delivery-history filters for inclusive start/end dates and accepted/rejected results. Optional boundaries work independently, and results sort newest delivery dates first, then newest entry times. The selected-record count and accepted/rejected litre totals update together. Invalid/reversed dates retain the previous selection and show an inline error. Empty registers and unmatched selections have separate guidance.
+
+Applying or clearing filters updates only the history area: an unsaved delivery-entry form is not rebuilt. Filters are temporary view state, not saved farm data. Full CSV exports and backups remain complete. Existing storage validation, safety reminders, daily summaries and image gallery are preserved. App-shell release versions were incremented together.
+
+Validation: 32 Node tests passed (six new filter tests), all JavaScript syntax checks passed, and a six-view bilingual rendering smoke check verified unique control IDs and linked labels. Deployed mobile/UI checks and deployment status are recorded in the final delivery report.
+
+This completes the delivery-filtering work that could not be executed on 2 November because the development environment was unavailable.

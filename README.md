@@ -76,3 +76,8 @@ The home page now highlights the next useful farm action, today's preparation st
 ## Keyboard and phone access
 
 Navigation moves keyboard focus to the new page heading. Form labels are explicitly linked, with help text exposed separately. Phone navigation uses concise bilingual labels while retaining full screen-reader names; main navigation and carousel controls have larger touch targets. Contributors can inspect 320px and 390px layouts using `tests/mobile-preview.html` on the same server.
+
+
+## Find collection results
+
+On Milk deliveries, filter history by optional inclusive date boundaries and accepted/rejected result. The selected-record count and litre totals update with the list. Clear filters to restore all records. Applying filters keeps an unfinished delivery-entry form intact; CSV exports and JSON backups still include all records.

@@ -46,3 +46,10 @@ The app cannot certify milk safety, replace a laboratory test, set a withdrawal 
 The home screen derives daily actions from the local herd, treatment, preparation-check and delivery records. The latest same-day check is selected by recorded creation time. Current treatment holds and missing dates take priority over recording another delivery. These reminders are not milk-safety clearance.
 
 The seven-day summary includes today and the six preceding calendar dates, using delivery dates rather than entry order. It excludes future results. Reasons are grouped only by case and whitespace, ranked by rejected litres, and shown as the top three with a link to all deliveries. All results remain user-entered, not independently verified collector or laboratory records. No currency losses, causal claims or diagnostic categories are inferred.
+
+
+## Delivery history filtering
+
+Start/end date boundaries are optional and inclusive. Result filtering supports all, accepted or rejected deliveries. History sorts by descending delivery date, then entry timestamp. The record count and litre totals refer to selected rows; lifetime dashboard totals and the seven-day overview retain their original scope. Clearing filters restores the complete history.
+
+Applying/clearing filters does not reconstruct the delivery-entry form, overwrite stored records, or narrow CSV exports/backups. Filters last only in the current app session. A reversed range is rejected with a translated inline error and leaves the existing selection intact.

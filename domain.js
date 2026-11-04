@@ -126,3 +126,13 @@ export function collectionSummary(state, day = todayLocal()) {
     todayCount:today.length,todayAccepted:totalLitres(today,'accepted'),todayRejected:totalLitres(today,'rejected'),
     checkStatus:!check?'missing':check.flagged?'followup':'recorded',reminders,action};
 }
+
+
+// Select and sort records without changing the saved register.
+export function filterDeliveries(rows, {from = '', to = '', status = 'all'} = {}) {
+  if (typeof from !== 'string' || typeof to !== 'string' || (from && !validDate(from)) || (to && !validDate(to)) || (from && to && from > to) || !['all','accepted','rejected'].includes(status)) {
+    throw new Error('Invalid delivery filters');
+  }
+  return rows.filter(row => (!from || row.date >= from) && (!to || row.date <= to) && (status === 'all' || row.status === status))
+    .sort((a,b) => b.date.localeCompare(a.date) || ((Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0)));
+}

@@ -1,11 +1,12 @@
-import { fieldMarkup, focusView } from './accessibility.js?v=6';
-import { mountCarousel } from './carousel.js?v=6';
-import { collectionSummary, STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js?v=6';
+import { fieldMarkup, focusView } from './accessibility.js?v=7';
+import { mountCarousel } from './carousel.js?v=7';
+import { filterDeliveries, collectionSummary, STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js?v=7';
 
 let storage, storageIssue = false, savedRaw = null;
 let state = emptyState();
 try { storage = window.localStorage; savedRaw = storage.getItem(STORAGE_KEY); state = readState(storage); } catch { storageIssue = true; }
 let view = 'home';
+let deliveryFilters = {from:'',to:'',status:'all'};
 let offlineReady = false;
 let farmSlide = 0;
 let carouselPaused = false;
@@ -22,6 +23,7 @@ const icon = name => `<svg class="ui-icon" width="24" height="24" viewBox="0 0 2
 
 const copy = {
   en: {
+    filterTitle: 'Find collection results', filterFrom: 'From date', filterTo: 'To date', filterStatus: 'Result to show', filterAll: 'All results', filterApply: 'Apply filters', filterClear: 'Clear filters', filterHint: 'Dates are optional and include both boundary days. Newest delivery dates appear first.', filterInvalid: 'Choose valid dates. The end date must be on or after the start date.', filterNoMatches: 'No results match these filters. Clear them or choose another date range.', filterShowing: 'Showing', filterOf: 'of', filterRecords: 'records', filterTotals: 'Litres in selected records',
     navHome: 'Home', navAnimals: 'Herd', navTreatments: 'Care', navCheck: 'Check', navDeliveries: 'Milk', navData: 'Data',
     topReasons: 'Up to three leading reasons by rejected litres. View all deliveries for the full record.',
     dailyTitle: 'Today’s collection', dailyEyebrow: 'YOUR NEXT STEP', recentWeek: 'Last seven days', weekNote: 'From your saved collection results. Reasons are reported by you, not independently verified.', noWeek: 'No collection results in this period. Record a result after the collector tests your milk.', noRejections: 'No rejected deliveries recorded in this period.', reasonsTitle: 'Reasons entered for rejected milk', reasonCount: 'deliveries', todayResults: 'Results recorded today', checkMissing: 'No preparation check today', checkFollowup: 'Latest check needs follow-up', checkRecorded: 'Preparation check recorded', currentReminders: 'Animals needing vet follow-up', nextAnimal: 'Start with your herd record.', nextTreatment: 'Review treatment reminders before collection.', nextCheck: 'Record your preparation before leaving.', nextFollowup: 'Follow up on the latest preparation check.', nextDelivery: 'Record the collector’s actual result.', reviewResults: 'Review today’s collection results.', noClearance: 'A recorded check is not clearance to sell milk. Follow vet instructions and collection-point testing.',
@@ -54,6 +56,7 @@ const copy = {
     selected: 'Animals with treatment reminders', noResult: 'No results yet', inUse: 'An animal with linked records cannot be deleted.',
   },
   sw: {
+    filterTitle: 'Tafuta matokeo ya maziwa', filterFrom: 'Kuanzia tarehe', filterTo: 'Hadi tarehe', filterStatus: 'Matokeo ya kuonyesha', filterAll: 'Matokeo yote', filterApply: 'Tumia vichujio', filterClear: 'Ondoa vichujio', filterHint: 'Tarehe ni za hiari; siku zote mbili zinajumuishwa. Tarehe za karibuni huonekana kwanza.', filterInvalid: 'Chagua tarehe halali. Tarehe ya mwisho isiwe kabla ya tarehe ya mwanzo.', filterNoMatches: 'Hakuna matokeo yanayolingana na vichujio hivi. Viondoe au chagua tarehe nyingine.', filterShowing: 'Inaonyesha', filterOf: 'kati ya', filterRecords: 'kumbukumbu', filterTotals: 'Lita katika kumbukumbu zilizochaguliwa',
     navHome: 'Mwanzo', navAnimals: 'Mifugo', navTreatments: 'Tiba', navCheck: 'Kagua', navDeliveries: 'Maziwa', navData: 'Data',
     topReasons: 'Hadi sababu tatu kuu kulingana na lita zilizokataliwa. Tazama matokeo yote kwa kumbukumbu kamili.',
     dailyTitle: 'Mkusanyiko wa maziwa leo', dailyEyebrow: 'HATUA INAYOFUATA', recentWeek: 'Siku saba zilizopita', weekNote: 'Kutoka kwenye matokeo uliyohifadhi. Sababu umeziandika wewe; hazijathibitishwa kwa kujitegemea.', noWeek: 'Hakuna matokeo katika kipindi hiki. Rekodi matokeo baada ya mkaguzi kupima maziwa.', noRejections: 'Hakuna maziwa yaliyokataliwa yaliyorekodiwa katika kipindi hiki.', reasonsTitle: 'Sababu zilizoandikwa za maziwa kukataliwa', reasonCount: 'uwasilishaji', todayResults: 'Matokeo yaliyorekodiwa leo', checkMissing: 'Hakuna ukaguzi wa maandalizi leo', checkFollowup: 'Ukaguzi wa mwisho unahitaji ufuatiliaji', checkRecorded: 'Ukaguzi wa maandalizi umerekodiwa', currentReminders: 'Ng’ombe wanaohitaji ufuatiliaji wa daktari', nextAnimal: 'Anza kwa kurekodi mifugo yako.', nextTreatment: 'Pitia tahadhari za matibabu kabla ya kupeleka.', nextCheck: 'Rekodi maandalizi kabla ya kuondoka.', nextFollowup: 'Fuatilia ukaguzi wa mwisho wa maandalizi.', nextDelivery: 'Rekodi matokeo halisi ya mkaguzi.', reviewResults: 'Pitia matokeo ya maziwa ya leo.', noClearance: 'Ukaguzi uliorekodiwa si ruhusa ya kuuza maziwa. Fuata maelekezo ya daktari na vipimo vya kituo.',
@@ -150,8 +153,23 @@ function checks() {
   layout(`<div class="page-heading"><span class="eyebrow">${t('preparationLabel')}</span><h1>${t('checkTitle')}</h1><p>${t('checkSub')}</p></div><div class="two-column"><section class="panel form-panel"><div class="panel-heading"><span class="circle-icon">${icon('check')}</span><h2>${t('start')}</h2></div>${flagged.length ? `<div class="warning-block"><strong>${t('selected')}</strong><p>${flagged.map(a=>clean(a.name)).join(', ')}</p><small>${t('reminder')}</small></div>`:''}<form id="check-form">${field(t('date'),`<input name="date" type="date" value="${todayLocal()}" required>`)}${radio('container',t('cleanContainer'))}${radio('water',t('cleanWater'))}${radio('promptly',t('promptly'))}<button class="button button-dark" type="submit">${t('saveCheck')} <span>↗</span></button></form></section><section class="panel records-panel"><div class="section-heading"><div><span class="eyebrow">${t('preparationLabel')}</span><h2>${t('checkHistory')}</h2></div></div>${state.checks.length ? `<div class="records-list">${[...state.checks].reverse().map(item => `<div class="record-row"><div class="record-icon ${item.flagged?'rejected':'accepted'}">${item.flagged?'!':'✓'}</div><div class="record-main"><strong>${date(item.date)} · ${item.flagged?t('notClear'):t('prepared')}</strong><span>${t('cleanContainer')}: ${t(item.container)} · ${t('cleanWater')}: ${t(item.water)} · ${t('promptly')}: ${t(item.promptly)}</span></div></div>`).join('')}</div>` : empty(t('noChecks'))}<div class="safety-callout lower"><strong>✳ ${t('reminder')}</strong></div></section></div>`, t('check'));
 }
 
+function deliveryResults() {
+  const rows = filterDeliveries(state.deliveries,deliveryFilters);
+  return `<dl class="filtered-totals" aria-label="${t('filterTotals')}"><div><dt>${t('accepted')}</dt><dd>${totalLitres(rows,'accepted').toFixed(1)} L</dd></div><div><dt>${t('rejected')}</dt><dd>${totalLitres(rows,'rejected').toFixed(1)} L</dd></div></dl>${rows.length ? deliveryRows(rows) : empty(t(state.deliveries.length?'filterNoMatches':'noDeliveries'))}`;
+}
+function filterCount() {
+  return `${t('filterShowing')} ${filterDeliveries(state.deliveries,deliveryFilters).length} ${t('filterOf')} ${state.deliveries.length} ${t('filterRecords')}`;
+}
+function deliveryFilterPanel() {
+  return `<form id="delivery-filter-form" class="delivery-filters" aria-label="${t('filterTitle')}" aria-describedby="filter-hint"><h3>${t('filterTitle')}</h3><p id="filter-hint">${t('filterHint')}</p><div class="filter-date-pair">${field(t('filterFrom'),`<input type="date" name="filterFrom" value="${deliveryFilters.from}">`)}${field(t('filterTo'),`<input type="date" name="filterTo" value="${deliveryFilters.to}">`)}</div>${field(t('filterStatus'),`<select name="filterStatus">${[['all','filterAll'],['accepted','acceptedOption'],['rejected','rejectedOption']].map(([value,key])=>`<option value="${value}" ${deliveryFilters.status===value?'selected':''}>${t(key)}</option>`).join('')}</select>`)}<div class="filter-buttons"><button type="submit" class="button button-dark">${t('filterApply')}</button><button type="button" class="button button-outline" id="clear-delivery-filters">${t('filterClear')}</button></div><p id="filter-error" class="filter-error" role="alert"></p></form><p id="delivery-filter-status" class="filter-count" role="status" aria-live="polite">${filterCount()}</p><div id="delivery-filter-results">${deliveryResults()}</div>`;
+}
+function updateDeliveryResults() {
+  $('#delivery-filter-results').innerHTML=deliveryResults();
+  $('#delivery-filter-status').textContent=filterCount();
+}
+
 function deliveries() {
-  layout(`<div class="page-heading"><span class="eyebrow">${t('resultsLabel')}</span><h1>${t('deliveryTitle')}</h1><p>${t('deliverySub')}</p></div><div class="two-column"><section class="panel form-panel"><div class="panel-heading"><span class="circle-icon">${icon('deliveries')}</span><h2>${t('recordDelivery')}</h2></div><form id="delivery-form">${field(t('date'),`<input name="date" type="date" value="${todayLocal()}" required>`)}${field(t('litres'),'<input name="litres" type="number" min="0.1" max="100000" step="0.1" required placeholder="e.g. 12.5">')}${field(t('result'),`<select name="status" required><option value="accepted">${t('acceptedOption')}</option><option value="rejected">${t('rejectedOption')}</option></select>`)}${field(t('reason'),`<input name="reason" maxlength="180" placeholder="${t('reasonPlaceholder')}">`)}${field(t('collector'),'<input name="collector" maxlength="100" placeholder="e.g. Mukurweini collection centre">')}<button class="button button-dark" type="submit">${t('saveDelivery')} <span>↗</span></button></form></section><section class="panel records-panel"><div class="section-heading"><div><span class="eyebrow">${t('historyLabel')}</span><h2>${t('all')} <span class="count">${state.deliveries.length}</span></h2></div></div>${deliveryRows([...state.deliveries].reverse())}<div class="export-box"><div><strong>${t('backup')}</strong><p>${t('exportDesc')}</p></div><button class="button button-outline" id="export-button">${t('export')} ↓</button></div></section></div>`, t('deliveries'));
+  layout(`<div class="page-heading"><span class="eyebrow">${t('resultsLabel')}</span><h1>${t('deliveryTitle')}</h1><p>${t('deliverySub')}</p></div><div class="two-column"><section class="panel form-panel"><div class="panel-heading"><span class="circle-icon">${icon('deliveries')}</span><h2>${t('recordDelivery')}</h2></div><form id="delivery-form">${field(t('date'),`<input name="date" type="date" value="${todayLocal()}" required>`)}${field(t('litres'),'<input name="litres" type="number" min="0.1" max="100000" step="0.1" required placeholder="e.g. 12.5">')}${field(t('result'),`<select name="status" required><option value="accepted">${t('acceptedOption')}</option><option value="rejected">${t('rejectedOption')}</option></select>`)}${field(t('reason'),`<input name="reason" maxlength="180" placeholder="${t('reasonPlaceholder')}">`)}${field(t('collector'),'<input name="collector" maxlength="100" placeholder="e.g. Mukurweini collection centre">')}<button class="button button-dark" type="submit">${t('saveDelivery')} <span>↗</span></button></form></section><section class="panel records-panel"><div class="section-heading"><div><span class="eyebrow">${t('historyLabel')}</span><h2>${t('all')} <span class="count">${state.deliveries.length}</span></h2></div></div>${deliveryFilterPanel()}<div class="export-box"><div><strong>${t('backup')}</strong><p>${t('exportDesc')}</p></div><button class="button button-outline" id="export-button">${t('export')} ↓</button></div></section></div>`, t('deliveries'));
 }
 
 function dataPrivacy() {
@@ -178,6 +196,12 @@ document.addEventListener('click', event => {
     if (confirm(t('deleteConfirm'))) persist(next => { next.animals=next.animals.filter(item=>item.id!==animalId); });
   }
   if (event.target.closest('#language-toggle')) { language=language==='en'?'sw':'en'; try { storage.setItem('maziwa-language',language); } catch {} render(); }
+  if (event.target.closest('#clear-delivery-filters')) {
+    deliveryFilters={from:'',to:'',status:'all'};
+    const form=$('#delivery-filter-form');
+    form.elements.filterFrom.value=''; form.elements.filterTo.value=''; form.elements.filterStatus.value='all';
+    $('#filter-error').textContent=''; updateDeliveryResults();
+  }
   if (event.target.closest('#export-button')) exportAll();
   if (event.target.closest('#json-export')) {
     try { const raw=storageIssue?storage.getItem(STORAGE_KEY):JSON.stringify(state,null,2); if(raw===null) throw new Error(); download(`maziwa-backup-${todayLocal()}.json`,raw,'application/json'); } catch { toast(t('saveFailed')); }
@@ -188,6 +212,18 @@ document.addEventListener('click', event => {
 });
 
 document.addEventListener('submit', event => {
+  if (event.target.id==='delivery-filter-form') {
+    event.preventDefault();
+    const form=event.target;
+    const candidate={from:form.elements.filterFrom.value,to:form.elements.filterTo.value,status:form.elements.filterStatus.value};
+    try { filterDeliveries(state.deliveries,candidate); }
+    catch {
+      $('#filter-error').textContent=t('filterInvalid');
+      (candidate.from && !validDate(candidate.from) ? form.elements.filterFrom : form.elements.filterTo).focus();
+      return;
+    }
+    deliveryFilters=candidate; $('#filter-error').textContent=''; updateDeliveryResults(); return;
+  }
   if (!['animal-form','treatment-form','check-form','delivery-form'].includes(event.target.id)) return;
   event.preventDefault();
   const data=Object.fromEntries(new FormData(event.target));
@@ -244,6 +280,7 @@ window.addEventListener('storage', event => {
 });
 render();
 if ('serviceWorker'  in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready).then(() => { offlineReady=true; $('#offline-status').textContent=t('offline'); }).catch(()=>{});
+
 
 
 

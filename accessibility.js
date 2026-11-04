@@ -1,6 +1,6 @@
 const escapeText = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
-// Each view contains a single form. Stable IDs associate each label and its help.
+// Control names are unique within each view. Stable IDs link labels and help.
 export function fieldMarkup(label, control, help = '') {
   const name = control.match(/\bname="([a-zA-Z][\w-]*)"/)?.[1];
   if (!name) throw new Error('Form control requires a name');
@@ -18,3 +18,4 @@ export function focusView(doc = document) {
   heading.focus({preventScroll:true});
   return true;
 }
+
