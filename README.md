@@ -81,3 +81,9 @@ Navigation moves keyboard focus to the new page heading. Form labels are explici
 ## Find collection results
 
 On Milk deliveries, filter history by optional inclusive date boundaries and accepted/rejected result. The selected-record count and litre totals update with the list. Clear filters to restore all records. Applying filters keeps an unfinished delivery-entry form intact; CSV exports and JSON backups still include all records.
+
+## Continue unfinished entries
+
+Animal, treatment, preparation-check and delivery entries stay in page memory when you change sections or switch English/Kiswahili. Home shows a bilingual resume panel, using the existing credited Kenyan photograph, with a button for each unfinished entry. An entry is cleared only after a successful save or confirmed discard; failed saves retain it. Successful backup restoration and device-record reset clear all unfinished entries to avoid mixing them with replaced records.
+
+Unfinished entries are not saved farm records and are not included in exports or backups. They last only while this page stays open. Save before closing or reloading; supported browsers warn when leaving with unfinished work. No additional browser storage or external service is used.

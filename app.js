@@ -1,10 +1,13 @@
-import { fieldMarkup, focusView } from './accessibility.js?v=7';
-import { mountCarousel } from './carousel.js?v=7';
-import { filterDeliveries, collectionSummary, STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js?v=7';
+import { createDrafts, ENTRY_FORMS } from './drafts.js?v=8';
+import { fieldMarkup, focusView } from './accessibility.js?v=8';
+import { mountCarousel } from './carousel.js?v=8';
+import { filterDeliveries, collectionSummary, STORAGE_KEY, emptyState, readState, saveState, commitState, parseBackup, MAX_BACKUP_BYTES, todayLocal, validDate, treatmentStatus, animalStatus, formatDate, totalLitres, toCsv } from './domain.js?v=8';
 
 let storage, storageIssue = false, savedRaw = null;
 let state = emptyState();
 try { storage = window.localStorage; savedRaw = storage.getItem(STORAGE_KEY); state = readState(storage); } catch { storageIssue = true; }
+const drafts = createDrafts();
+const entryForm = () => document.querySelector(Object.keys(ENTRY_FORMS).map(id=>'#'+id).join(','));
 let view = 'home';
 let deliveryFilters = {from:'',to:'',status:'all'};
 let offlineReady = false;
@@ -23,6 +26,7 @@ const icon = name => `<svg class="ui-icon" width="24" height="24" viewBox="0 0 2
 
 const copy = {
   en: {
+    resumeTitle: 'Pick up where you left off.', resumeEyebrow: 'UNFINISHED ENTRIES', resumeHint: 'These entries are not saved yet. Continue an entry below.', draftHint: 'Your entry stays here when you switch sections or language. Save before closing or reloading this page.', discardDraft: 'Clear unfinished entry', discardConfirm: 'Clear this unfinished entry? Your saved farm records will be kept.',
     filterTitle: 'Find collection results', filterFrom: 'From date', filterTo: 'To date', filterStatus: 'Result to show', filterAll: 'All results', filterApply: 'Apply filters', filterClear: 'Clear filters', filterHint: 'Dates are optional and include both boundary days. Newest delivery dates appear first.', filterInvalid: 'Choose valid dates. The end date must be on or after the start date.', filterNoMatches: 'No results match these filters. Clear them or choose another date range.', filterShowing: 'Showing', filterOf: 'of', filterRecords: 'records', filterTotals: 'Litres in selected records',
     navHome: 'Home', navAnimals: 'Herd', navTreatments: 'Care', navCheck: 'Check', navDeliveries: 'Milk', navData: 'Data',
     topReasons: 'Up to three leading reasons by rejected litres. View all deliveries for the full record.',
@@ -56,6 +60,7 @@ const copy = {
     selected: 'Animals with treatment reminders', noResult: 'No results yet', inUse: 'An animal with linked records cannot be deleted.',
   },
   sw: {
+    resumeTitle: 'Endelea ulipoishia.', resumeEyebrow: 'FOMU AMBAZO HUJAHIFADHI', resumeHint: 'Fomu hizi bado hazijahifadhiwa. Chagua fomu ili kuendelea.', draftHint: 'Fomu yako hubaki unapobadili sehemu au lugha. Ihifadhi kabla ya kufunga au kupakia upya ukurasa.', discardDraft: 'Futa fomu ambayo hujahifadhi', discardConfirm: 'Futa fomu hii ambayo hujahifadhi? Kumbukumbu zilizohifadhiwa zitabaki.',
     filterTitle: 'Tafuta matokeo ya maziwa', filterFrom: 'Kuanzia tarehe', filterTo: 'Hadi tarehe', filterStatus: 'Matokeo ya kuonyesha', filterAll: 'Matokeo yote', filterApply: 'Tumia vichujio', filterClear: 'Ondoa vichujio', filterHint: 'Tarehe ni za hiari; siku zote mbili zinajumuishwa. Tarehe za karibuni huonekana kwanza.', filterInvalid: 'Chagua tarehe halali. Tarehe ya mwisho isiwe kabla ya tarehe ya mwanzo.', filterNoMatches: 'Hakuna matokeo yanayolingana na vichujio hivi. Viondoe au chagua tarehe nyingine.', filterShowing: 'Inaonyesha', filterOf: 'kati ya', filterRecords: 'kumbukumbu', filterTotals: 'Lita katika kumbukumbu zilizochaguliwa',
     navHome: 'Mwanzo', navAnimals: 'Mifugo', navTreatments: 'Tiba', navCheck: 'Kagua', navDeliveries: 'Maziwa', navData: 'Data',
     topReasons: 'Hadi sababu tatu kuu kulingana na lita zilizokataliwa. Tazama matokeo yote kwa kumbukumbu kamili.',
@@ -129,9 +134,14 @@ function collectionOverview() {
   return `<section class="collection-overview" aria-label="${t('dailyTitle')}"><div class="panel daily-panel"><div class="section-heading"><div><span class="eyebrow">${t('dailyEyebrow')}</span><h2>${t('dailyTitle')}</h2></div></div><p class="daily-next">${t(actionText)}</p><ul class="collection-status"><li>${icon('treatments')}<span>${t('currentReminders')}</span><strong>${summary.reminders}</strong></li><li>${icon('check')}<span>${t(checkLabel)}</span></li><li>${icon('deliveries')}<span>${t('todayResults')}</span><strong>${summary.todayCount}</strong></li></ul><button class="button button-dark" data-go="${summary.action}">${t(actionLabel)} <span>↗</span></button><p class="safety-callout">${t('noClearance')}</p></div><div class="panel week-panel"><div class="section-heading"><div><span class="eyebrow">${date(summary.from)} – ${date(summary.to)}</span><h2>${t('recentWeek')}</h2></div></div><p class="summary-note">${t('weekNote')}</p>${summary.count ? `<dl class="week-totals"><div><dt>${t('accepted')}</dt><dd>${summary.accepted.toFixed(1)} <small>L</small></dd></div><div><dt>${t('rejected')}</dt><dd>${summary.rejected.toFixed(1)} <small>L</small></dd></div></dl><h3 class="reason-heading">${t('reasonsTitle')}</h3>${summary.reasons.length ? `<ul class="reason-list">${summary.reasons.slice(0,3).map(row=>`<li><div><strong>${clean(row.reason)}</strong><small>${row.count} ${t('reasonCount')}</small></div><span>${row.litres.toFixed(1)} L</span></li>`).join('')}</ul><p class="summary-note">${t('topReasons')}</p>` : `<p class="summary-empty">${t('noRejections')}</p>`}` : `<p class="summary-empty">${t('noWeek')}</p>`}<button class="text-button" data-go="deliveries">${t('all')} ↗</button></div></section>`;
 }
 
+function unfinishedEntries() {
+  if (!drafts.ids().length) return '';
+  return `<section class="resume-panel" aria-labelledby="resume-title"><figure class="resume-photo"><img src="assets/kenya-dairy.webp" width="1600" height="1067" loading="lazy" decoding="async" alt=""><figcaption>${t('documentaryImage')}</figcaption></figure><div class="resume-content"><span class="eyebrow">${t('resumeEyebrow')}</span><h2 id="resume-title">${t('resumeTitle')}</h2><p>${t('resumeHint')}</p><div class="resume-actions">${drafts.ids().map(id=>`<button type="button" class="button button-outline" data-go="${ENTRY_FORMS[id]}">${icon(ENTRY_FORMS[id])}${t(ENTRY_FORMS[id])}${icon('arrow')}</button>`).join('')}</div></div></section>`;
+}
+
 function home() {
   const held = state.animals.filter(animal => ['hold', 'ask'].includes(animalStatus(animal.id, state.treatments))).length;
-  layout(`<div class="overview-heading"><div><span class="eyebrow">${t('today')}</span><h2>${t('welcome')}</h2></div><time datetime="${todayLocal()}">${new Intl.DateTimeFormat(language==='sw'?'sw-KE':'en-KE',{weekday:'short',day:'numeric',month:'short'}).format(new Date())}</time></div><section class="hero"><div class="hero-text"><div class="eyebrow light"><span class="little-line"></span>${t('heroTag')}</div><h1>${t('headline')}</h1><p>${t('intro')}</p><button class="button button-gold" data-go="check">${t('start')} <span>↗</span></button></div>${farmGallery()}</section>
+  layout(`<div class="overview-heading"><div><span class="eyebrow">${t('today')}</span><h2>${t('welcome')}</h2></div><time datetime="${todayLocal()}">${new Intl.DateTimeFormat(language==='sw'?'sw-KE':'en-KE',{weekday:'short',day:'numeric',month:'short'}).format(new Date())}</time></div>${unfinishedEntries()}<section class="hero"><div class="hero-text"><div class="eyebrow light"><span class="little-line"></span>${t('heroTag')}</div><h1>${t('headline')}</h1><p>${t('intro')}</p><button class="button button-gold" data-go="check">${t('start')} <span>↗</span></button></div>${farmGallery()}</section>
   <section class="metrics" aria-label="Farm totals"><div class="metric"><span>${t('accepted')}</span><strong>${totalLitres(state.deliveries,'accepted').toFixed(1)} <small>L</small></strong><span class="metric-mark green">${icon('accepted')}</span></div><div class="metric"><span>${t('rejected')}</span><strong>${totalLitres(state.deliveries,'rejected').toFixed(1)} <small>L</small></strong><span class="metric-mark rust">${icon('rejected')}</span></div><div class="metric"><span>${t('herd')}</span><strong>${state.animals.length}</strong><span class="metric-mark leaf">${icon('animals')}</span></div><div class="metric"><span>${t('held')}</span><strong>${held}</strong><span class="metric-mark amber">${icon('alert')}</span></div></section>
   ${collectionOverview()}
   <section class="panel recent-panel"><div class="section-heading"><div><span class="eyebrow">${t('historyLabel')}</span><h2>${t('recent')}</h2></div><button class="text-button" data-go="deliveries">${t('all')} ↗</button></div>${deliveryRows([...state.deliveries].reverse().slice(0,4))}</section>`, t('home'));
@@ -175,20 +185,45 @@ function deliveries() {
 function dataPrivacy() {
   layout(`<div class="page-heading"><span class="eyebrow">${t('dataLabel')}</span><h1>${t('dataTitle')}</h1><p>${t('dataSub')}</p></div><div class="two-column"><section class="panel form-panel"><h2>${t('backup')}</h2><p>${t('restoreHint')}</p><button class="button button-dark" id="json-export">${storageIssue?t('recovery'):t('jsonExport')} ↓</button><div class="export-box"><label class="field"><span>${t('restore')}</span><input id="restore-file" type="file" accept=".json,application/json" ${storageIssue?'disabled':''}></label></div><button class="button button-outline" id="export-button" ${storageIssue?'disabled':''}>${t('export')} ↓</button></section><section class="panel form-panel"><h2>${t('data')}</h2><p>${t('dataSub')}</p><div class="warning-block">${t('resetConfirm')}</div><button class="button button-outline danger" id="reset-records">${t('reset')}</button></section></div>`,t('data'));
 }
-function render() { ({home,animals,treatments,check:checks,deliveries,data:dataPrivacy})[view](); }
+function updateDraftControls() {
+  const form = entryForm();
+  if (form) { drafts.capture(form); $('#discard-draft').disabled = !drafts.has(form.id); }
+}
+function render({savedForm=null,clearDrafts=false}={}) {
+  const previous = entryForm();
+  if (clearDrafts) drafts.clearAll();
+  else {
+    if (previous?.id !== savedForm) drafts.capture(previous);
+    if (savedForm) drafts.clear(savedForm);
+  }
+  ({home,animals,treatments,check:checks,deliveries,data:dataPrivacy})[view]();
+  const form = entryForm();
+  if (form) {
+    drafts.restore(form);
+    const notice = document.createElement('div');
+    notice.className='entry-note';
+    notice.innerHTML=`<p>${icon('data')}<span>${t('draftHint')}</span></p><button type="button" class="text-button" id="discard-draft" ${drafts.has(form.id)?'':'disabled'}>${t('discardDraft')}</button>`;
+    form.prepend(notice);
+    // Restore the rejected-result constraint as well as the field values.
+    if (form.id === 'delivery-form') form.elements.reason.required = form.elements.status.value === 'rejected';
+  }
+}
 function toast(message) { const box=$('#toast'); box.textContent=message; box.classList.add('show'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>box.classList.remove('show'),3500); }
-function persist(change) {
+function persist(change, renderOptions={}) {
   try {
     if (storageIssue || storage.getItem(STORAGE_KEY) !== savedRaw) throw new Error('Storage changed');
     state = commitState(storage,state,change);
     savedRaw = storage.getItem(STORAGE_KEY);
-    render(); toast(t('saved')); return true;
+    render(renderOptions); toast(t('saved')); return true;
   } catch { toast(t('saveFailed')); return false; }
 }
 
 document.addEventListener('click', event => {
   const go=event.target.closest('[data-view],[data-go]');
   if (go) { view=go.dataset.view||go.dataset.go; render(); window.scrollTo(0,0); focusView(); }
+  if (event.target.closest('#discard-draft') && confirm(t('discardConfirm'))) {
+    render({savedForm:entryForm().id}); entryForm().querySelector('input,select,textarea')?.focus();
+  }
   const del=event.target.closest('[data-delete-animal]');
   if (del) {
     const animalId=del.dataset.deleteAnimal;
@@ -207,7 +242,7 @@ document.addEventListener('click', event => {
     try { const raw=storageIssue?storage.getItem(STORAGE_KEY):JSON.stringify(state,null,2); if(raw===null) throw new Error(); download(`maziwa-backup-${todayLocal()}.json`,raw,'application/json'); } catch { toast(t('saveFailed')); }
   }
   if (event.target.closest('#reset-records') && confirm(t('resetConfirm'))) {
-    try { state=saveState(storage,emptyState()); savedRaw=storage.getItem(STORAGE_KEY); storageIssue=false; render(); toast(t('saved')); } catch { toast(t('saveFailed')); }
+    try { state=saveState(storage,emptyState()); savedRaw=storage.getItem(STORAGE_KEY); storageIssue=false; render({clearDrafts:true}); toast(t('saved')); } catch { toast(t('saveFailed')); }
   }
 });
 
@@ -239,13 +274,13 @@ document.addEventListener('submit', event => {
     if (!validDate(data.date)||!['container','water','promptly'].every(key=>['yes','no','unsure'].includes(data[key]))) return toast(t('invalid'));
     const flagged=['container','water','promptly'].some(key=>data[key]!=='yes')||state.animals.some(a=>['hold','ask'].includes(animalStatus(a.id,state.treatments,data.date)));
     next.checks.push({...base,...data,flagged});
-    if(persist(draft => Object.assign(draft,next))) toast(flagged?t('notClearBody'):t('preparedBody')); return;
+    if(persist(draft => Object.assign(draft,next),{savedForm:event.target.id})) toast(flagged?t('notClearBody'):t('preparedBody')); return;
   } else {
     const litres=Number(data.litres);
     if (!validDate(data.date)||!Number.isFinite(litres)||litres<=0||litres>100000||!['accepted','rejected'].includes(data.status)|| (data.status==='rejected'&&!data.reason?.trim())) return toast(t('invalid'));
     next.deliveries.push({...base,date:data.date,litres,status:data.status,reason:data.reason.trim(),collector:data.collector.trim()});
   }
-  persist(draft => Object.assign(draft,next));
+  persist(draft => Object.assign(draft,next),{savedForm:event.target.id});
 });
 
 function download(filename,content,type='text/csv;charset=utf-8') {
@@ -263,7 +298,13 @@ function exportAll() {
   toast(t('exportDone'));
 }
 
+document.addEventListener('input', event => { if (event.target.closest('form') === entryForm()) updateDraftControls(); });
+window.addEventListener('beforeunload', event => {
+  drafts.capture(entryForm());
+  if (drafts.ids().length) { event.preventDefault(); event.returnValue=''; }
+});
 document.addEventListener('change', async event => {
+  if (event.target.closest('form') === entryForm()) updateDraftControls();
   if (event.target.matches('#delivery-form [name="status"]')) $('#delivery-form [name="reason"]').required = event.target.value === 'rejected';
   if (event.target.id !== 'restore-file') return;
   const file=event.target.files[0]; if(!file) return;
@@ -271,7 +312,7 @@ document.addEventListener('change', async event => {
     if(file.size > MAX_BACKUP_BYTES) throw new Error();
     const imported=parseBackup(await file.text());
     const count=['animals','treatments','checks','deliveries'].reduce((sum,key)=>sum+imported[key].length,0);
-    if(confirm(`${count} ${t('records')}. ${t('restoreConfirm')}`)) persist(draft=>Object.assign(draft,imported));
+    if(confirm(`${count} ${t('records')}. ${t('restoreConfirm')}`)) persist(draft=>Object.assign(draft,imported),{clearDrafts:true});
   } catch { toast(t('badBackup')); }
   event.target.value='';
 });
@@ -280,6 +321,7 @@ window.addEventListener('storage', event => {
 });
 render();
 if ('serviceWorker'  in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready).then(() => { offlineReady=true; $('#offline-status').textContent=t('offline'); }).catch(()=>{});
+
 
 
 

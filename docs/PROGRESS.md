@@ -46,3 +46,13 @@ Applying or clearing filters updates only the history area: an unsaved delivery-
 Validation: 32 Node tests passed (six new filter tests), all JavaScript syntax checks passed, and a six-view bilingual rendering smoke check verified unique control IDs and linked labels. Deployed mobile/UI checks and deployment status are recorded in the final delivery report.
 
 This completes the delivery-filtering work that could not be executed on 2 November because the development environment was unavailable.
+
+## 19 November 2026 — Continue unfinished farm entries
+
+Fixed a concrete everyday usability problem: switching sections or changing language previously rebuilt forms and erased unfinished work. Animal, treatment, preparation-check and delivery entries now restore text, dates, selections and radio answers from page memory. Pristine defaults do not count as unfinished work. A successful save clears only its own entry; failed saves preserve it. Confirmed discard clears the current entry, while successful backup replacement or device reset clears all entries. Missing animal selections cannot silently switch to another animal after records change.
+
+Home now offers a responsive cream-and-gold resume panel with the existing credited Kenyan dairy photograph and consistent navigation icons. Each form explains the page-session limit in English/Kiswahili. Supported browsers warn before leaving with unsaved work. No additional persistent storage, farm-data schema, backup contents, security policy, withdrawal guidance or external service changed. App-shell versions and offline asset caching were updated together.
+
+Validation before push: all 39 Node tests passed, including seven new draft-behavior regression tests; all six JavaScript syntax checks passed. A rendering/lifecycle smoke check covered all six views in both languages, unique control IDs, language/navigation restoration, rejected-result constraints, failed-write retention, successful-save isolation, unload protection and reset. Live deployment and phone-layout verification are recorded in the delivery report.
+
+Next: use farmer feedback to choose a further practical improvement; unfinished entries intentionally do not survive reloads or page closure.

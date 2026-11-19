@@ -77,6 +77,24 @@ body{background:var(--oat)}
 }
 
 
+/* Unfinished work stays easy to find without becoming a saved farm record. */
+.resume-panel{display:flex;gap:24px;background:#fffaf0;border:1px solid #dec99e;border-left:4px solid #bc8e47;border-radius:12px;margin:0 0 22px;overflow:hidden}
+.resume-photo{position:relative;flex:0 0 170px;margin:0;background:#163f32;align-self:stretch}
+.resume-photo img{display:block;width:100%;height:100%;min-height:190px;object-fit:cover}
+.resume-photo figcaption{position:absolute;bottom:0;left:0;right:0;padding:9px 10px;background:#163f32ed;color:#fff;font-size:9px;line-height:1.5}
+.resume-content{padding:22px 24px 22px 0;min-width:0;flex:1}
+.resume-content h2{font-family:Georgia,serif;font-size:27px;font-weight:400;line-height:1.25;color:#163f32;margin:8px 0}
+.resume-content p{font-size:12px;line-height:1.7;color:#5e6b52;margin:0 0 15px}
+.resume-actions{display:flex;flex-wrap:wrap;gap:9px}
+.resume-actions .button{min-height:44px;white-space:normal;text-align:left;font-size:12px;gap:9px;background:#fffefb}
+.resume-actions .ui-icon{flex:none;width:18px;height:18px}
+.entry-note{padding:14px 15px;margin-bottom:22px;border:1px solid #e1d4b7;border-radius:9px;background:#fffaf0}
+.entry-note p{display:flex;gap:10px;align-items:flex-start;margin:0;font-size:12px;line-height:1.7;color:#526348}
+.entry-note .ui-icon{width:19px;height:19px;flex:none;margin-top:2px;color:#7f6735}
+.entry-note .text-button{display:inline-flex;align-items:center;white-space:normal;text-align:left;min-height:44px;font-size:12px;margin-top:5px}
+.entry-note .text-button:disabled{color:#687363;opacity:1;cursor:default;text-decoration:none}
+@media(max-width:600px){.resume-panel{gap:0;margin-bottom:18px}.resume-photo{display:none}.resume-content{padding:19px}.resume-content h2{font-size:25px}.resume-actions{flex-direction:column;align-items:stretch}.resume-actions .button{justify-content:flex-start}.resume-actions .button>.ui-icon:last-child{margin-left:auto}.entry-note{padding:12px}.entry-note p{font-size:12px}}
+
 /* Read-only delivery filters keep the entry form untouched. */
 .delivery-filters{background:#f2f5ec;border:1px solid #dce5d5;border-radius:10px;padding:17px;margin-bottom:18px}
 .delivery-filters h3{font-family:Georgia,serif;font-weight:400;font-size:21px;line-height:1.3;margin:0 0 8px;color:#173e32}
@@ -90,3 +108,4 @@ body{background:var(--oat)}
 .filtered-totals>div{padding:14px;border:1px solid #e1e7dd;background:#f3f6ef;border-radius:9px}.filtered-totals>div:last-child{background:#fcf1e9}
 .filtered-totals dt{font-size:11px;line-height:1.5;color:#526b52}.filtered-totals dd{font-family:Georgia,serif;font-size:25px;color:#173e32;margin:9px 0 0}
 @media(max-width:600px){.filter-date-pair{grid-template-columns:1fr;gap:0}.delivery-filters{padding:15px}.filter-buttons .button{font-size:11px}.filtered-totals>div{padding:11px}.filtered-totals dd{font-size:23px}}
+
