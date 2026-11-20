@@ -1,6 +1,6 @@
 # Security policy
 
-This is a static, device-local pilot. There are no server accounts, roles, authenticated collector results, or shared records. Farm records and exported backups are unencrypted. Anyone with access to the browser profile or a downloaded backup may read them. GitHub Pages hosts the public application code; never commit farmer records, credentials, or private backups.
+This is a static, device-local pilot. There are no server accounts, roles, authenticated collector results, or shared records. Farm records, optional farmer/contact details and exported backups are unencrypted. Anyone with access to the browser profile or a downloaded backup may read them. GitHub Pages hosts the public application code; never commit farmer records, credentials, or private backups.
 
 ## Implemented safeguards
 
@@ -18,3 +18,4 @@ Do not publish sensitive farmer data or exploit details in a public issue. Use G
 ## Before a shared field deployment
 
 Design and test server authentication and authorization, least-privilege farmer/collector/vet roles, immutable audit history, verified collection results, encryption, recovery, retention and consent. Include an independent security review. This app never certifies milk safety or replaces veterinary instructions and collection-point tests.
+

@@ -1,9 +1,9 @@
 // Unfinished entries live only in this page's memory, never in farm storage/backups.
 export const ENTRY_FORMS = Object.freeze({
   'animal-form':'animals', 'treatment-form':'treatments',
-  'check-form':'check', 'delivery-form':'deliveries'
+  'check-form':'check', 'delivery-form':'deliveries', 'profile-form':'profile'
 });
-const supported = new Set(['text','date','number','textarea','select-one','radio','checkbox']);
+const supported = new Set(['text','tel','date','number','textarea','select-one','radio','checkbox']);
 const controls = form => [...form.elements].filter(el => el.name && !el.disabled && supported.has(el.type));
 const snapshot = form => controls(form).map(el => ({
   name:el.name, type:el.type, value:el.value,
@@ -41,3 +41,4 @@ export function createDrafts() {
     clearAll: () => entries.clear()
   };
 }
+

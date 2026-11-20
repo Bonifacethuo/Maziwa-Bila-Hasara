@@ -1,7 +1,19 @@
 export const STORAGE_KEY = 'maziwa-bila-hasara:v1';
 
+export const PROFILE_LIMITS = Object.freeze({farmerName:60,farmName:80,phone:32,county:60,locality:100,collectionPoint:100});
+export const emptyProfile = () => Object.fromEntries(Object.keys(PROFILE_LIMITS).map(key => [key,'']));
+export const hasProfile = profile => Object.keys(PROFILE_LIMITS).some(key => profile[key].trim());
+
+export function validateProfile(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) ||
+      !Object.entries(PROFILE_LIMITS).every(([key,max]) => text(value[key],max))) throw new Error('Invalid farm profile.');
+  const profile = Object.fromEntries(Object.keys(PROFILE_LIMITS).map(key => [key,value[key].trim()]));
+  if (profile.phone && (!/^\+?[0-9 ()-]+$/.test(profile.phone) || !/^\d{7,15}$/.test(profile.phone.replace(/\D/g,'')))) throw new Error('Invalid phone number.');
+  return profile;
+}
+
 export function emptyState() {
-  return { version: 1, animals: [], treatments: [], checks: [], deliveries: [] };
+  return { version: 1, profile: emptyProfile(), animals: [], treatments: [], checks: [], deliveries: [] };
 }
 
 export const MAX_BACKUP_BYTES = 2_000_000;
@@ -12,6 +24,8 @@ const text = (value, max, required = false) => typeof value === 'string' && valu
 export function validateState(value) {
   const fail = () => { throw new Error('Invalid or oversized farm records.'); };
   if (!value || value.version !== 1 || !tables.every(key => Array.isArray(value[key]) && value[key].length <= 5000)) fail();
+  // Existing v1 registers/backups have no profile. Add empty defaults in memory only.
+  const profile = value.profile === undefined ? emptyProfile() : validateProfile(value.profile);
   const ids = new Set();
   for (const key of tables) for (const row of value[key]) {
     if (!row || !text(row.id, 100, true) || ids.has(row.id) || !text(row.createdAt, 40, true) || !/^\d{4}-\d{2}-\d{2}T/.test(row.createdAt) || !Number.isFinite(Date.parse(row.createdAt))) fail();
@@ -24,7 +38,7 @@ export function validateState(value) {
   if (!value.deliveries.every(row => validDate(row.date) && typeof row.litres === 'number' && Number.isFinite(row.litres) && row.litres > 0 && row.litres <= 100000 && ['accepted','rejected'].includes(row.status) && text(row.reason,180,row.status === 'rejected') && text(row.collector,100))) fail();
   // Copy only known fields; discard imported metadata and prototype-like properties.
   const fields = {animals:['id','createdAt','name','note'],treatments:['id','createdAt','animalId','name','vet','date','holdUntil','instructions'],checks:['id','createdAt','date','container','water','promptly','flagged'],deliveries:['id','createdAt','date','litres','status','reason','collector']};
-  return Object.fromEntries([['version',1], ...tables.map(key => [key,value[key].map(row => Object.fromEntries(fields[key].map(field => [field,row[field]])))])]);
+  return Object.fromEntries([['version',1], ['profile',profile], ...tables.map(key => [key,value[key].map(row => Object.fromEntries(fields[key].map(field => [field,row[field]])))])]);
 }
 
 export function parseBackup(raw) {
@@ -136,3 +150,4 @@ export function filterDeliveries(rows, {from = '', to = '', status = 'all'} = {}
   return rows.filter(row => (!from || row.date >= from) && (!to || row.date <= to) && (status === 'all' || row.status === status))
     .sort((a,b) => b.date.localeCompare(a.date) || ((Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0)));
 }
+

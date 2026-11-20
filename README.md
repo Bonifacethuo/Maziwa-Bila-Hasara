@@ -12,7 +12,7 @@ Avoidable milk rejection at collection costs farmers income and can obscure the 
 - Record a treatment, animal health provider, date, exact instructions, and an optional **vet supplied** hold-through date. Missing dates prompt a vet check; dates that have passed never automatically clear milk for sale.
 - Run a three-question precollection checklist for container, cleaning water, and prompt cooling or delivery. A concern produces a follow-up warning.
 - Record accepted or rejected litres and a reason supplied by the collector. A rejected result requires a reason.
-- See totals and recent results. Export four separate CSV exports, with spreadsheet formula injection protection.
+- See totals and recent results. Export five separate CSV files (profile, animals, treatments, checks and deliveries), with spreadsheet formula injection protection.
 - Use the interface in English or Kiswahili. Installable service worker caches the app shell for offline use after the first load.
 
 ## Design refresh
@@ -87,3 +87,11 @@ On Milk deliveries, filter history by optional inclusive date boundaries and acc
 Animal, treatment, preparation-check and delivery entries stay in page memory when you change sections or switch English/Kiswahili. Home shows a bilingual resume panel, using the existing credited Kenyan photograph, with a button for each unfinished entry. An entry is cleared only after a successful save or confirmed discard; failed saves retain it. Successful backup restoration and device-record reset clear all unfinished entries to avoid mixing them with replaced records.
 
 Unfinished entries are not saved farm records and are not included in exports or backups. They last only while this page stays open. Save before closing or reloading; supported browsers warn when leaving with unfinished work. No additional browser storage or external service is used.
+
+## Farmer dashboard and profile
+
+Open **My farm** in the top bar, or **Set up my farm** on Home, to record the farmer name, farm name, optional phone number, county, town/village and usual collection point. All fields are optional. Save to update the dashboard and the saved-details panel; unsaved edits remain separate and survive section/language changes while the page is open. Home shows the saved farm name and location, keeping the phone number in the profile view.
+
+Details are stored in the same validated local register as farm records, not published to GitHub or sent to collectors. JSON backups include the profile; CSV export adds a separate profile file with the existing formula-injection protection. Existing v1 records load without a migration write. Restoring an older backup without a profile leaves profile details blank, as explained before confirmation. Device-record deletion includes the profile.
+
+Personal details and backups are not encrypted. Anyone using this browser can read them. Use a device screen lock and keep backups private. There is no login, account verification or shared farmer directory.

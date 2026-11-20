@@ -46,3 +46,15 @@ test('backup files, filters, unknown forms and unsupported controls are never re
 test('untouched forms cannot be captured before initialization',()=>{
   const drafts=createDrafts();drafts.capture(form('animal-form',input('name','Existing')));assert.deepEqual(drafts.ids(),[]);
 });
+
+test('profile edits restore telephone text across navigation and discard returns to saved defaults',()=>{
+  const drafts=createDrafts(),old=form('profile-form',input('farmerName','Wanjiku'),input('phone','0712345678','tel'));
+  drafts.restore(old);drafts.capture(old);assert.equal(drafts.has(old.id),false);
+  old.elements[1].value='+254 712 345 678';drafts.capture(old);
+  const rebuilt=form('profile-form',input('farmerName','Wanjiku'),input('phone','0712345678','tel'));
+  drafts.restore(rebuilt);assert.equal(rebuilt.elements[1].value,'+254 712 345 678');
+  drafts.clear(rebuilt.id);
+  const discarded=form('profile-form',input('farmerName','Wanjiku'),input('phone','0712345678','tel'));
+  drafts.restore(discarded);assert.equal(discarded.elements[1].value,'0712345678');assert.equal(drafts.has(discarded.id),false);
+});
+

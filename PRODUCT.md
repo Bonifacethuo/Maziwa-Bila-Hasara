@@ -13,8 +13,9 @@ Reduce **avoidable rejected litres per 100 litres presented** at a cooperating m
 | Collection clerk | Give a clear result and reason | Farmer records clerk's result | Clerk login, testing evidence, receipt and audit trail |
 | Veterinarian | Keep treatment instructions accurate | Named provider field | Provider verification and an editable treatment protocol |
 
-## Data dictionary, v1
+## Data dictionary, v1 (backward-compatible profile extension)
 
+- `profile`: optional in older v1 backups; new state supplies empty defaults. String fields: `farmerName` (60 characters), `farmName` (80), `phone` (32), `county` (60), `locality` (100), `collectionPoint` (100). All are optional. A nonblank phone accepts 7–15 digits with an optional leading +, spaces, parentheses or hyphens. Profile fields are trimmed, length checked and control characters rejected. Unknown metadata is discarded.
 - `animals`: `id`, `name` (or tag), optional `note`, `createdAt`.
 - `treatments`: `id`, `animalId`, `name`, `vet`, `date`, optional `holdUntil`, optional `instructions`, `createdAt`. `holdUntil` is the last day **through which milk is held** as supplied by a veterinarian. Blank means ask; an elapsed date means review, never an automatic safe status.
 - `checks`: `id`, `date`, `container`, `water`, `promptly` (`yes`, `no`, `unsure`), `flagged`, `createdAt`. A flag means follow up, not a test result.
@@ -53,3 +54,9 @@ The seven-day summary includes today and the six preceding calendar dates, using
 Start/end date boundaries are optional and inclusive. Result filtering supports all, accepted or rejected deliveries. History sorts by descending delivery date, then entry timestamp. The record count and litre totals refer to selected rows; lifetime dashboard totals and the seven-day overview retain their original scope. Clearing filters restores the complete history.
 
 Applying/clearing filters does not reconstruct the delivery-entry form, overwrite stored records, or narrow CSV exports/backups. Filters last only in the current app session. A reversed range is rejected with a translated inline error and leaves the existing selection intact.
+
+## Farmer dashboard
+
+A My farm action in the top bar and a Home setup/edit card open the optional profile. The form and saved-details panel distinguish unsaved edits from committed details. All interface labels, help, privacy notes and errors are available in English/Kiswahili. The existing six-section phone navigation is preserved; My farm has a separate 44px touch control. Farm name and location personalize the dashboard; phone details appear only in the profile and private exports/backups.
+
+Saving a profile preserves all four farm-record tables. Failed writes retain both previous records and the unfinished form. Profile edits use the existing page-memory draft behavior, including confirmed discard and before-unload protection. Full JSON backups include the profile; five CSV files include a separate profile file. A legacy backup without a profile replaces it with empty defaults after explicit confirmation; reset removes it with all farm records. None of these fields represent verified identity or an authenticated account.

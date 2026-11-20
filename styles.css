@@ -77,6 +77,18 @@ body{background:var(--oat)}
 }
 
 
+/* Farmer dashboard and optional device-local profile. */
+.farm-profile-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;min-width:44px;padding:9px 12px;border:1px solid #d6dfd0;border-radius:9px;background:#fffefb;color:#254d38;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.farm-profile-button .ui-icon{width:19px;height:19px}.farm-profile-button:hover,.farm-profile-button[aria-current="page"]{background:#eaf0e2;border-color:#a4b899}
+.farm-overview{display:flex;align-items:center;gap:18px;padding:24px;background:#fffefb;border:1px solid #d9e3d1;border-top:3px solid #b58b44;border-radius:12px;margin-bottom:22px}
+.farm-emblem{display:flex;align-items:center;justify-content:center;flex:none;width:54px;height:54px;border:1px solid #d5debc;border-radius:14px;background:#f3f2df;color:#42694b}.farm-emblem .ui-icon{width:27px;height:27px}
+.farm-overview-copy{min-width:0;flex:1}.farm-overview-copy h2{font-family:Georgia,serif;font-size:28px;font-weight:400;line-height:1.25;color:#163f32;margin:8px 0;overflow-wrap:anywhere}
+.farm-overview-copy p{font-size:12px;line-height:1.7;color:#5b7055;margin:0;overflow-wrap:anywhere}
+.farm-overview-actions{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;max-width:40%}.farm-overview-actions .button{min-height:44px;white-space:normal;gap:10px;text-align:left}.farm-overview-actions .ui-icon{width:18px;height:18px;flex:none}.farm-overview-actions .text-button{display:flex;align-items:center;min-height:44px;font-size:11px;white-space:normal}
+.profile-columns{align-items:start}.profile-side{display:grid;gap:20px;min-width:0}.profile-saved h2,.profile-privacy h2{line-height:1.3}.profile-saved h2{margin-top:10px}.profile-details{margin:16px 0 0}.profile-details>div{padding:13px 0;border-bottom:1px solid #e1e7dd}.profile-details>div:last-child{border:0;padding-bottom:0}.profile-details dt{font-size:11px;color:#5c7157;margin:0 0 6px}.profile-details dd{font-size:14px;line-height:1.7;color:#244734;margin:0;overflow-wrap:anywhere;white-space:pre-wrap}.profile-privacy{background:#eef3e8}.profile-privacy .circle-icon{margin-bottom:16px}.profile-privacy p{font-size:12px;line-height:1.8;color:#50664d}.profile-privacy .button{white-space:normal;gap:10px;min-height:44px}.profile-privacy .ui-icon{width:18px;height:18px;flex:none}.profile-privacy>.circle-icon .ui-icon{width:21px;height:21px}.profile-error{color:#943d2e;font-size:12px;line-height:1.7}.profile-error:empty{display:none}#profile-form>.button{gap:10px;min-height:44px;white-space:normal}#profile-form>.button .ui-icon{width:18px;height:18px}
+@media(max-width:900px){.farm-overview{align-items:flex-start;flex-wrap:wrap}.farm-overview-actions{flex-direction:row;max-width:none;flex-wrap:wrap;margin-left:72px;gap:10px}.profile-side{gap:17px}}
+@media(max-width:600px){.farm-profile-button{padding:9px}.farm-profile-button>span{display:none}.farm-overview{padding:19px;gap:13px;margin-bottom:18px}.farm-emblem{width:42px;height:42px;border-radius:11px}.farm-emblem .ui-icon{width:23px;height:23px}.farm-overview-copy h2{font-size:25px}.farm-overview-actions{margin-left:0;align-items:flex-start;width:100%;gap:3px;flex-direction:column}.farm-overview-copy .eyebrow{font-size:9px;letter-spacing:1px}.profile-saved h2,.profile-privacy h2{font-size:23px}.profile-details dd{font-size:14px}}
+
 /* Unfinished work stays easy to find without becoming a saved farm record. */
 .resume-panel{display:flex;gap:24px;background:#fffaf0;border:1px solid #dec99e;border-left:4px solid #bc8e47;border-radius:12px;margin:0 0 22px;overflow:hidden}
 .resume-photo{position:relative;flex:0 0 170px;margin:0;background:#163f32;align-self:stretch}
@@ -108,4 +120,5 @@ body{background:var(--oat)}
 .filtered-totals>div{padding:14px;border:1px solid #e1e7dd;background:#f3f6ef;border-radius:9px}.filtered-totals>div:last-child{background:#fcf1e9}
 .filtered-totals dt{font-size:11px;line-height:1.5;color:#526b52}.filtered-totals dd{font-family:Georgia,serif;font-size:25px;color:#173e32;margin:9px 0 0}
 @media(max-width:600px){.filter-date-pair{grid-template-columns:1fr;gap:0}.delivery-filters{padding:15px}.filter-buttons .button{font-size:11px}.filtered-totals>div{padding:11px}.filtered-totals dd{font-size:23px}}
+
 
